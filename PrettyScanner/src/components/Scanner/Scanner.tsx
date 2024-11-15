@@ -44,7 +44,7 @@ const Scanner: React.FC = () => {
   const webcamRef = useRef<Webcam | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const API_URL = import.meta.env.BASE_API_URL || 'http://localhost:8000/analyze';
+  const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   const handleError = (error: Error) => {
     console.error('Error:', error);
@@ -62,7 +62,7 @@ const Scanner: React.FC = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${BASE_URL}/analyze`, {
         method: 'POST',
         body: formData,
       });
