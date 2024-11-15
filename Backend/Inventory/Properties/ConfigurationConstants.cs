@@ -2,9 +2,9 @@ namespace Inventory.Properties;
 
 public class ConfigurationConstants
 {
+    public const string JwtKey = "Jwt:Key";
     public const string HealthCheck = "/health";
     public const string DatabaseName = "mongodb";
-    public const string JwtKey = "Jwt:Key";
     public const string JwtIssuer = "Jwt:Issuer";
     public const string JwtAudience = "Jwt:Audience";
     public const string JwtExpiryIn = "Jwt:ExpiryIn";
