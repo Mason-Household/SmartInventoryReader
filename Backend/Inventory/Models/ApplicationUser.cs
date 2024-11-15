@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Identity;
+
 namespace Inventory.Models;
 
 public class ApplicationUser : IdentityUser<Guid>
@@ -6,6 +8,5 @@ public class ApplicationUser : IdentityUser<Guid>
     public string LastName { get; set; } = null!;
     public long? CurrentOrganizationId { get; set; }
     
-    // Navigation properties
-    public ICollection<UserOrganization> Organizations { get; set; } = new List<UserOrganization>();
+    public ICollection<UserOrganization> Organizations { get; set; } = [];
 }

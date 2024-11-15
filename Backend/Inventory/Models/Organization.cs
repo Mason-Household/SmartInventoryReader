@@ -9,8 +9,7 @@ public class Organization
     public DateTime CreatedAt { get; set; }
     public bool IsActive { get; set; }
     public string? SubscriptionTier { get; set; }
-    
     // Navigation properties
     public ICollection<ApplicationUser> Users { get; set; } = [];
-    public ICollection<OrganizationInvite> Invites { get; set; } = [];
+    // public ICollection<OrganizationInvite> Invites { get; set; } = [];
 }

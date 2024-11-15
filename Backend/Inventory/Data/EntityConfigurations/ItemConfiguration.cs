@@ -1,4 +1,6 @@
 using Inventory.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Inventory.Data.EntityConfigurations;
 
@@ -15,7 +17,7 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
         builder.HasIndex(x => x.Barcode).IsUnique();
         builder.HasIndex(x => x.Name);
 
-        builder.HasOne(x => x.Category)
+        builder.HasOne(x => x.Category!)
             .WithMany(x => x.Items)
             .HasForeignKey(x => x.CategoryId)
             .OnDelete(DeleteBehavior.SetNull);
