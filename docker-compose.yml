@@ -6,6 +6,8 @@ services:
   container_name: db
   ports:
     - "27017:27017"
+  volumes:
+    - ./data:/data/db
   healthcheck:
     test: ["CMD-SHELL", "mongo --eval 'db.runCommand({ connectionStatus: 1 })'"]
     interval: 1m30s
@@ -55,3 +57,6 @@ services:
       timeout: 30s
       retries: 120
       start_period: 30s
+
+volumes:
+  data:
