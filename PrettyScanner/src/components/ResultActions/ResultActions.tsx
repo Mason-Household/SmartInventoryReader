@@ -27,20 +27,7 @@ import {
 	Trash2,
 } from 'lucide-react';
 import { ScanResult } from '../../interfaces/ScanResult';
-
-interface InventoryItem {
-	id?: string;
-	name: string;
-	suggestedPrice: number | null;
-	actualPrice: number;
-	type: 'product' | 'menu_item';
-	category?: string;
-	confidence: number;
-	dateAdded: string;
-	source: 'scan' | 'manual';
-	notes?: string;
-	tags?: string[];
-}
+import { InventoryItem } from '../../interfaces/InventoryItem';
 
 interface ResultActionsProps {
 	scanResult: ScanResult;
