@@ -21,10 +21,10 @@ import {
   Home,
   History,
   Settings,
-  HelpOutline,
-} from '@mui/icons-material';
+} from 'lucide-react';
 import ErrorBoundary from '../Errors/ErrorBoundary';
-import GitHubIcon from '@mui/icons-material/GitHub';
+import { Github as GitHubIcon } from 'lucide-react';
+import HelpOutline from '../HelpOutline/HelpOutline';
 import { motion, AnimatePresence } from 'framer-motion';
 import ThemeSelector from '../ThemeSelector/ThemeSelector';
 

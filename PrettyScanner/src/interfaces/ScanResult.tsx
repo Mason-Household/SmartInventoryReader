@@ -1,8 +1,19 @@
+import { MenuItem } from "./MenuItem";
+
 export interface ScanResult {
-	type: 'barcode' | 'qrcode' | 'image'| 'text';
+	type: ScanType;
 	price: number | null;
 	confidence: number;
-	additional_info: Record<string, any>;
+	additional_info: {
+		menuItems?: MenuItem[];
+		currency?: string;
+		venue_name?: string;
+		menu_type?: 'food' | 'drinks' | 'combined';
+		detected_language?: string;
+		[key: string]: any;
+	};
 	text_found: string[];
 }
+
+export type ScanType = 'barcode' | 'qrcode' | 'image' | 'text';
   

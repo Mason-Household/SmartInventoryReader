@@ -1,4 +1,3 @@
-// src/components/ThemeSelector.tsx
 import React from 'react';
 import {
   Card,
@@ -13,8 +12,8 @@ import {
   Zoom,
   Box,
 } from '@mui/material';
-import { Settings, Moon, Sun } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Settings, Moon, Sun } from 'lucide-react';
 import { useCustomTheme } from '../../theme/ThemeContext';
 
 const ThemeCard = motion(React.forwardRef<HTMLDivElement, any>((props, ref) => <Card {...props} ref={ref} component="div" />));
@@ -57,10 +56,10 @@ export const ThemeSelector: React.FC = () => {
       >
         <DialogTitle>Select Theme</DialogTitle>
         <DialogContent>
-          <Box container spacing={2} sx={{ mt: 1 }}>
+          <Box sx={{ mt: 1 }}>
             {availableThemes.map((preset: { id: string; primary: any; secondary: any; name: any; }) => {
               return (
-                <Box item xs={12} sm={6} key={preset.id}>
+                <Box key={preset.id}>
                   <ThemeCard
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
