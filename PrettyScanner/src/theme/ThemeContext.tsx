@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
 import { ThemeProvider as MUIThemeProvider, createTheme, alpha } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { themePresets, type CustomTheme, type ThemePreset } from './types';
+import { themePresets, type CustomTheme } from './ThemePreset';
 
 interface ThemeContextType {
   currentTheme: CustomTheme;
