@@ -23,10 +23,11 @@ import {
   Settings,
   HelpOutline,
 } from '@mui/icons-material';
+import ErrorBoundary from '../Errors/ErrorBoundary';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { motion, AnimatePresence } from 'framer-motion';
 import ThemeSelector from '../ThemeSelector/ThemeSelector';
-import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
+
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -37,10 +38,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
 
   const menuItems = [
-    { icon: <Home size={20} />, text: 'Home', path: '/' },
-    { icon: <History size={20} />, text: 'Scan History', path: '/history' },
-    { icon: <Settings size={20} />, text: 'Settings', path: '/settings' },
-    { icon: <HelpOutline size={20} />, text: 'Help', path: '/help' },
+    { icon: <Home />, text: 'Home', path: '/' },
+    { icon: <History />, text: 'Scan History', path: '/history' },
+    { icon: <Settings />, text: 'Settings', path: '/settings' },
+    { icon: <HelpOutline />, text: 'Help', path: '/help' },
   ];
 
   const toggleDrawer = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
