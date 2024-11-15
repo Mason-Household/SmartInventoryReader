@@ -16,9 +16,7 @@ services:
     start_period: 30s
 
   backend:
-    build:
-      context: ./SmartInventoryScanner
-      dockerfile: Dockerfile
+    image: fivemowner/smart-inventory-reader-backend:latest
     ports:
       - "5000:5000"
     depends_on:
@@ -31,9 +29,7 @@ services:
       start_period: 30s
 
   llm-service:
-    build:
-      context: ./LLM
-      dockerfile: Dockerfile
+    image: fivemowner/smart-inventory-reader-llm-service:latest
     ports:
       - "8080:8080"
     healthcheck:
@@ -44,13 +40,13 @@ services:
       start_period: 30s
 
   frontend:
-    build:
-      context: ./PrettyScanner
-      dockerfile: Dockerfile
+    image: fivemowner/smart-inventory-reader-frontend:latest
     ports:
       - "3000:3000"
     depends_on:
       - backend
+    environment:
+      - VITE_API_URL=http://localhost:5000
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
       interval: 1m30s

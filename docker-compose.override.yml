@@ -1,0 +1,14 @@
+services:
+  build:
+      context: ./SmartInventoryScanner
+      dockerfile: Dockerfile
+  
+  llm-service:
+    build:
+      context: ./LLM
+      dockerfile: Dockerfile
+
+  frontend:
+    build:
+      context: ./PrettyScanner
+      dockerfile: Dockerfile

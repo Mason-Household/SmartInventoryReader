@@ -44,7 +44,7 @@ const Scanner: React.FC = () => {
   const webcamRef = useRef<Webcam | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   const handleError = (error: Error) => {
     console.error('Error:', error);

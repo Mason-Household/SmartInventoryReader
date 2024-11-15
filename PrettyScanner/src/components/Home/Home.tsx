@@ -1,10 +1,9 @@
 // src/components/Home.tsx
 import React from 'react';
 import {
-  Box,
   Card,
   CardContent,
-  Grid,
+  Box,
   Typography,
   Button,
   useTheme,
@@ -170,9 +169,9 @@ const Home: React.FC = () => {
       exit={{ opacity: 0 }}
       sx={{ p: { xs: 2, sm: 3 } }}
     >
-      <Grid container spacing={3}>
+      <Box>
         {/* Welcome Section */}
-        <Grid item xs={12}>
+        <Box>
           <Box sx={{ mb: 4 }}>
             <Typography variant="h4" gutterBottom>
               Welcome to Sneaker Scanner
@@ -181,16 +180,16 @@ const Home: React.FC = () => {
               Quickly scan and price check your sneakers using AI-powered image recognition
             </Typography>
           </Box>
-        </Grid>
+        </Box>
 
         {/* Quick Actions */}
-        <Grid item xs={12}>
+        <Box>
           <Typography variant="h6" gutterBottom>
             Quick Actions
           </Typography>
-          <Grid container spacing={2}>
+          <Box>
             {quickActions.map((action, index) => (
-              <Grid item xs={12} sm={6} md={3} key={action.title}>
+              <Box key={action.title}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -198,13 +197,13 @@ const Home: React.FC = () => {
                 >
                   <QuickAction {...action} />
                 </motion.div>
-              </Grid>
+              </Box>
             ))}
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         {/* Recent Scans and Stats */}
-        <Grid item xs={12} md={8}>
+        <Box>
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -235,10 +234,10 @@ const Home: React.FC = () => {
               )}
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Stats Card */}
-        <Grid item xs={12} md={4}>
+        <Box>
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -277,8 +276,8 @@ const Home: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </Box>
   );
 };

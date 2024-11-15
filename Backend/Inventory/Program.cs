@@ -2,10 +2,13 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using FluentValidation.AspNetCore;
 using FluentValidation;
-using MongoDB.Driver;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using System.Security.Claims;
 using Inventory.Properties;
+using Inventory.Data;  // We'll create this
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using Inventory.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,13 +26,6 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddFluentValidationAutoValidation()
     .AddFluentValidationClientsideAdapters()
     .AddValidatorsFromAssembly(System.Reflection.Assembly.GetExecutingAssembly());
-
-// Configure MongoDB
-builder.Services.Configure<MongoDbSettings>(
-    builder.Configuration.GetSection(nameof(MongoDbSettings)));
-
-builder.Services.AddSingleton<IMongoClient>(sp => new MongoClient(builder.Configuration.GetValue<string>(ConfigurationConstants.ConnectionStringKey) ?? 
-    throw new InvalidOperationException()));
 
 // Configure Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -91,11 +87,17 @@ builder.Services.AddAuthentication(ConfigurationConstants.AuthenticationScheme)
     });
 
 // Add Health Checks
-builder.Services.AddHealthChecks()
-    .AddMongoDb(builder.Configuration.GetValue<string>(ConfigurationConstants.ConnectionStringKey) ?? 
-        throw new InvalidOperationException(),
-        name: ConfigurationConstants.DatabaseName,
-        timeout: TimeSpan.FromSeconds(3));
+builder.Services.AddHealthChecks();
+
+
+// Replace MongoDB with PostgreSQL/EF Core
+builder.Services.AddDbContext<InventoryDbContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        x => x.MigrationsAssembly("Inventory")
+    ));
+
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 var app = builder.Build();
 
