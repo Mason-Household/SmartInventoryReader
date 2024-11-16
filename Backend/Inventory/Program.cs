@@ -90,7 +90,6 @@ builder.Services.AddAuthentication(ConfigurationConstants.AuthenticationScheme)
 builder.Services.AddHealthChecks();
 
 
-// Replace MongoDB with PostgreSQL/EF Core
 builder.Services.AddDbContext<InventoryDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection"),

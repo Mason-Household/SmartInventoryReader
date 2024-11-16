@@ -25,14 +25,9 @@ COPY --from=build /app/out .
 # Expose the port the app runs on
 EXPOSE 80
 
-# Set environment variables for MongoDB connection
-ENV MONGO_CONNECTION_STRING=mongodb://mongo:27017
-ENV MONGO_DATABASE_NAME=YourDatabaseName
-
-# Set environment variables for JWT
-ENV JWT_SECRET_KEY=YourSecretKey
-ENV JWT_ISSUER=YourIssuer
-ENV JWT_AUDIENCE=YourAudience
+ENV JWT_SECRET_KEY=
+ENV JWT_ISSUER=
+ENV JWT_AUDIENCE=
 
 # Run the application
 ENTRYPOINT ["dotnet", "YourProjectName.dll"]
