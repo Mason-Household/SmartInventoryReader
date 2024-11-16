@@ -10,7 +10,7 @@ import {
   useMediaQuery,
   Paper,
   Tooltip,
-	alpha,
+  alpha,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -81,7 +81,7 @@ const RecentScan: React.FC<{
   price: number;
   timestamp: string;
   confidence: number;
-}> = ({ type, price, timestamp, confidence }: { type: string; price: number; timestamp: string; confidence: number }) => {
+}> = ({ type, price, timestamp, confidence }) => {
   const theme = useTheme();
 
   return (
@@ -169,41 +169,54 @@ const Home: React.FC = () => {
       exit={{ opacity: 0 }}
       sx={{ p: { xs: 2, sm: 3 } }}
     >
-      <Box>
-        {/* Welcome Section */}
-        <Box>
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" gutterBottom>
-              Welcome to Sneaker Scanner
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Quickly scan and price check your sneakers using AI-powered image recognition
-            </Typography>
-          </Box>
-        </Box>
+      {/* Welcome Section */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          Welcome to Sneaker Scanner
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Quickly scan and price check your sneakers using AI-powered image recognition
+        </Typography>
+      </Box>
 
-        {/* Quick Actions */}
-        <Box>
-          <Typography variant="h6" gutterBottom>
-            Quick Actions
-          </Typography>
-          <Box>
-            {quickActions.map((action, index) => (
-              <Box key={action.title}>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <QuickAction {...action} />
-                </motion.div>
-              </Box>
-            ))}
-          </Box>
+      {/* Quick Actions */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h6" gutterBottom>
+          Quick Actions
+        </Typography>
+        <Box sx={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          gap: isMobile ? 2 : 3,
+        }}>
+          {quickActions.map((action, index) => (
+            <Box 
+              key={action.title}
+              sx={{ 
+                flex: isMobile ? '1 1 100%' : '1 1 calc(25% - 24px)',
+                minWidth: isMobile ? 'auto' : '200px',
+              }}
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <QuickAction {...action} />
+              </motion.div>
+            </Box>
+          ))}
         </Box>
+      </Box>
 
-        {/* Recent Scans and Stats */}
-        <Box>
+      {/* Recent Scans and Stats */}
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: isMobile ? 'column' : 'row',
+        gap: isMobile ? 2 : 3,
+      }}>
+        {/* Recent Scans */}
+        <Box sx={{ flex: isMobile ? '1' : '2' }}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -236,8 +249,8 @@ const Home: React.FC = () => {
           </Card>
         </Box>
 
-        {/* Stats Card */}
-        <Box>
+        {/* Stats */}
+        <Box sx={{ flex: isMobile ? '1' : '1' }}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -255,8 +268,18 @@ const Home: React.FC = () => {
                     </Typography>
                   </Box>
                 </Box>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <Box sx={{ flex: 1, textAlign: 'center', p: 2, bgcolor: alpha(theme.palette.primary.main, 0.1), borderRadius: 1 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: isMobile ? 'column' : 'row', 
+                  gap: 2 
+                }}>
+                  <Box sx={{ 
+                    flex: 1, 
+                    textAlign: 'center', 
+                    p: 2, 
+                    bgcolor: alpha(theme.palette.primary.main, 0.1), 
+                    borderRadius: 1 
+                  }}>
                     <Typography variant="h6">
                       {recentScans.filter(s => s.confidence > 0.9).length}
                     </Typography>
@@ -264,7 +287,13 @@ const Home: React.FC = () => {
                       High Confidence
                     </Typography>
                   </Box>
-                  <Box sx={{ flex: 1, textAlign: 'center', p: 2, bgcolor: alpha(theme.palette.secondary.main, 0.1), borderRadius: 1 }}>
+                  <Box sx={{ 
+                    flex: 1, 
+                    textAlign: 'center', 
+                    p: 2, 
+                    bgcolor: alpha(theme.palette.secondary.main, 0.1), 
+                    borderRadius: 1 
+                  }}>
                     <Typography variant="h6">
                       ${recentScans.reduce((acc, curr) => acc + curr.price, 0).toFixed(2)}
                     </Typography>

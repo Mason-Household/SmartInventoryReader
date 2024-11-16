@@ -21,12 +21,14 @@ import {
   Home,
   History,
   Settings,
+  LogOut,
 } from 'lucide-react';
 import ErrorBoundary from '../Errors/ErrorBoundary';
 import { Github as GitHubIcon } from 'lucide-react';
 import HelpOutline from '../HelpOutline/HelpOutline';
 import { motion, AnimatePresence } from 'framer-motion';
 import ThemeSelector from '../ThemeSelector/ThemeSelector';
+import { useAuth } from '../../context/AuthContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -36,6 +38,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const { logout, organization } = useAuth();
 
   const menuItems = [
     { icon: <Home />, text: 'Home', path: '/' },
@@ -44,15 +47,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { icon: <HelpOutline />, text: 'Help', path: '/help' },
   ];
 
-  const toggleDrawer = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
-    if (
-      event.type === 'keydown' &&
-      ((event as React.KeyboardEvent).key === 'Tab' ||
-        (event as React.KeyboardEvent).key === 'Shift')
-    ) {
-      return;
-    }
-    setDrawerOpen(open);
+  const handleDrawerToggle = () => {
+    setDrawerOpen(!drawerOpen);
+  };
+
+  const handleDrawerClose = () => {
+    setDrawerOpen(false);
   };
 
   return (
@@ -82,7 +82,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               edge="start"
               color="inherit"
               aria-label="menu"
-              onClick={toggleDrawer(true)}
+              onClick={handleDrawerToggle}
               sx={{ mr: 2 }}
             >
               <MenuIcon />
@@ -108,6 +108,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </Typography>
           </motion.div>
 
+          {organization && (
+            <Typography
+              variant="body2"
+              sx={{
+                ml: 2,
+                color: 'text.secondary',
+                display: { xs: 'none', sm: 'block' },
+              }}
+            >
+              {organization}
+            </Typography>
+          )}
+
           <Box sx={{ flexGrow: 1 }} />
 
           {!isMobile && (
@@ -128,8 +141,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </Box>
           )}
 
-          <Box sx={{ ml: 2 }}>
+          <Box sx={{ ml: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
             <ThemeSelector />
+            <Tooltip title="Logout" arrow>
+              <IconButton color="inherit" onClick={logout}>
+                <LogOut />
+              </IconButton>
+            </Tooltip>
           </Box>
 
           <Tooltip title="View on GitHub" arrow>
@@ -150,7 +168,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <Drawer
         anchor="left"
         open={drawerOpen}
-        onClose={toggleDrawer(false)}
+        onClose={handleDrawerClose}
         variant="temporary"
         sx={{
           '& .MuiDrawer-paper': {
@@ -164,6 +182,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Typography variant="h6" color="primary" sx={{ fontWeight: 700 }}>
             Menu
           </Typography>
+          {organization && (
+            <Typography variant="body2" color="text.secondary">
+              {organization}
+            </Typography>
+          )}
         </Box>
         <Divider />
         <List>
@@ -176,12 +199,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: index * 0.1 }}
-              onClick={toggleDrawer(false)}
+              onClick={handleDrawerClose}
+              button
             >
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItem>
           ))}
+          <Divider sx={{ my: 1 }} />
+          <ListItem
+            component={motion.div}
+            whileHover={{ x: 10 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              logout();
+              handleDrawerClose();
+            }}
+            button
+          >
+            <ListItemIcon><LogOut /></ListItemIcon>
+            <ListItemText primary="Logout" />
+          </ListItem>
         </List>
       </Drawer>
 
@@ -192,11 +230,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           flex: 1,
           py: 4,
           px: { xs: 2, sm: 3 },
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         <ErrorBoundary>
           <AnimatePresence mode="wait">
-            {children}
+            <Box
+              sx={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 3,
+              }}
+            >
+              {children}
+            </Box>
           </AnimatePresence>
         </ErrorBoundary>
       </Container>

@@ -10,14 +10,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@auth/core": "^0.37.4",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
+    "@firebase/auth": "^1.8.1",
+    "@huggingface/hub": "^0.20.0",
     "@mui/material": "^5.15.6",
+    "firebase": "^11.0.2",
     "framer-motion": "^10.18.0",
     "lucide-react": "^0.263.1",
     "notistack": "^3.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-query": "^3.39.3",
     "react-router-dom": "^6.28.0",
     "react-webcam": "^7.2.0"
   },
