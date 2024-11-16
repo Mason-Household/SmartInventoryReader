@@ -13,6 +13,7 @@ public interface IRepository<T> where T : class
     Task UpdateAsync(T entity);
     Task DeleteAsync(T entity);
     Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
+    Task SaveChangesAsync();
 }
 
 public class Repository<T>(InventoryDbContext context) : IRepository<T> where T : class
@@ -37,23 +38,29 @@ public class Repository<T>(InventoryDbContext context) : IRepository<T> where T 
     public async Task<T> AddAsync(T entity)
     {
         await _context.Set<T>().AddAsync(entity);
+        await SaveChangesAsync();
         return entity;
     }
 
-    public Task UpdateAsync(T entity)
+    public async Task UpdateAsync(T entity)
     {
         _context.Entry(entity).State = EntityState.Modified;
-        return Task.CompletedTask;
+        await SaveChangesAsync();
     }
 
-    public Task DeleteAsync(T entity)
+    public async Task DeleteAsync(T entity)
     {
         _context.Set<T>().Remove(entity);
-        return Task.CompletedTask;
+        await SaveChangesAsync();
     }
 
     public Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
     {
         return _context.Set<T>().AnyAsync(predicate);
+    }
+
+    public async Task SaveChangesAsync()
+    {
+        await _context.SaveChangesAsync();
     }
 }

@@ -1,8 +1,10 @@
 using MediatR;
 using Inventory.Models;
 using Inventory.Repositories;
+using Inventory.Services;
+using Microsoft.EntityFrameworkCore;
 
-namespace Inventory.Commands;
+namespace Inventory.Application.Commands;
 
 public class SaveItemCommand : IRequest<Item>
 {
@@ -18,15 +20,27 @@ public class SaveItemCommand : IRequest<Item>
 }
 
 public class SaveItemCommandHandler(
-    IRepository<Item> _itemRepository, 
-    IRepository<Tag> _tagRepository
+    IRepository<Item> _itemRepository,
+    IRepository<Tag> _tagRepository,
+    IRepository<Organization> _organizationRepository,
+    ICurrentUserService _currentUserService
 ) : IRequestHandler<SaveItemCommand, Item>
 {
     public async Task<Item> Handle(
-        SaveItemCommand request, 
+        SaveItemCommand request,
         CancellationToken cancellationToken
     )
     {
+        var organizationId = _currentUserService.GetCurrentOrganizationId();
+        if (organizationId == null)
+        {
+            throw new UnauthorizedAccessException("User is not associated with any organization");
+        }
+
+        var organization = await _organizationRepository.GetAsync(o => o.Id == organizationId);
+        var org = organization.FirstOrDefault() ?? 
+            throw new InvalidOperationException("Organization not found");
+
         var item = new Item
         {
             Name = request.Name,
@@ -36,20 +50,28 @@ public class SaveItemCommandHandler(
             LowStockThreshold = request.LowStockThreshold,
             Barcode = request.Barcode,
             CategoryId = request.CategoryId,
-            Notes = request.Notes
+            Notes = request.Notes,
+            Organization = org
         };
 
+        // Handle tags
         foreach (var tagName in request.TagNames)
         {
-            var tag = await _tagRepository.GetAsync(t => t.Name == tagName);
-            var existingTag = tag.FirstOrDefault();
-            if (existingTag is null)
+            var existingTags = await _tagRepository.GetAsync(t => t.Name == tagName);
+            var tag = existingTags.FirstOrDefault();
+            
+            if (tag == null)
             {
-                existingTag = new Tag { Name = tagName };
-                await _tagRepository.AddAsync(existingTag);
+                tag = new Tag { Name = tagName, Organization = org };
+                tag = await _tagRepository.AddAsync(tag);
             }
-            item.Tags.Add(existingTag);
+            
+            item.Tags.Add(tag);
         }
-        return await _itemRepository.AddAsync(item);
+
+        // Save the item with its relationships
+        var savedItem = await _itemRepository.AddAsync(item);
+        
+        return savedItem;
     }
 }

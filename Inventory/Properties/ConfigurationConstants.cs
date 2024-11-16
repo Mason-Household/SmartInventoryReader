@@ -2,6 +2,7 @@ namespace Inventory.Properties;
 
 public class ConfigurationConstants
 {
+    public const string ApiVersion = "1.0";
     public const string JwtKey = "Jwt:Key";
     public const string HealthCheck = "/health";
     public const string DatabaseName = "mongodb";
@@ -14,6 +15,7 @@ public class ConfigurationConstants
     public const string MigrationsAssembly = "Inventory";
     public const string MongoDbSettings = "MongoDbSettings";
     public const string DefaultConnection = "DefaultConnection";
+    public const string ItemsRoute = "api/v{version:apiVersion}/[controller]";
     public const string ConnectionStringKey = "MongoDbSettings:ConnectionString";
 
     public class SwaggerConfig

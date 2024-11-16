@@ -1,4 +1,3 @@
-
 using Inventory.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,6 +36,18 @@ public class InventoryDbContext : DbContext
                 case EntityState.Modified:
                     entry.Entity.UpdatedAt = DateTime.UtcNow;
                     break;
+            }
+        }
+
+        // Handle TenantEntity
+        foreach (var entry in ChangeTracker.Entries<TenantEntity>())
+        {
+            if (entry.State == EntityState.Added)
+            {
+                if (entry.Entity.OrganizationId == default)
+                {
+                    throw new InvalidOperationException("OrganizationId must be set for tenant entities");
+                }
             }
         }
 
