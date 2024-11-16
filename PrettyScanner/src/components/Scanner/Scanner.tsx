@@ -19,6 +19,8 @@ import {
   useMediaQuery,
   Dialog,
   DialogContent,
+  Chip,
+  Stack,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -253,10 +255,10 @@ const Scanner: React.FC = () => {
                     transition={{ delay: 0.2 }}
                   >
                     <Typography variant="subtitle2" color="textSecondary">
-                      Detection Type
+                      Product Name
                     </Typography>
                     <Typography variant="h6" sx={{ mb: 2 }}>
-                      {result.type.charAt(0).toUpperCase() + result.type.slice(1)}
+                      {result.name || 'Not detected'}
                     </Typography>
                   </motion.div>
 
@@ -266,27 +268,81 @@ const Scanner: React.FC = () => {
                     transition={{ delay: 0.3 }}
                   >
                     <Typography variant="subtitle2" color="textSecondary">
-                      Price
+                      Price Information
                     </Typography>
-                    <Typography variant="h4" color="primary" sx={{ mb: 2 }}>
-                      {result.price ? (
-                        <motion.span
-                          initial={{ scale: 0.8 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: "spring", stiffness: 200 }}
-                        >
-                          ${result.price.toFixed(2)}
-                        </motion.span>
-                      ) : (
-                        'Not found'
+                    <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                      <Box>
+                        <Typography variant="caption" color="textSecondary">
+                          Actual Price
+                        </Typography>
+                        <Typography variant="h5" color="primary">
+                          ${result.actual_price.toFixed(2)}
+                        </Typography>
+                      </Box>
+                      {result.suggested_price && (
+                        <Box>
+                          <Typography variant="caption" color="textSecondary">
+                            Suggested Price
+                          </Typography>
+                          <Typography variant="h5" color="secondary">
+                            ${result.suggested_price.toFixed(2)}
+                          </Typography>
+                        </Box>
                       )}
-                    </Typography>
+                    </Box>
                   </motion.div>
 
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
+                  >
+                    <Typography variant="subtitle2" color="textSecondary">
+                      Stock Information
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                      <Box>
+                        <Typography variant="caption" color="textSecondary">
+                          Quantity
+                        </Typography>
+                        <Typography variant="h6">
+                          {result.stock_quantity}
+                        </Typography>
+                      </Box>
+                      {result.low_stock_threshold && (
+                        <Box>
+                          <Typography variant="caption" color="textSecondary">
+                            Low Stock Alert
+                          </Typography>
+                          <Typography variant="h6">
+                            {result.low_stock_threshold}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </motion.div>
+
+                  {result.tag_names.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
+                    >
+                      <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+                        Tags
+                      </Typography>
+                      <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                        {result.tag_names.map((tag, index) => (
+                          <Chip key={index} label={tag} size="small" />
+                        ))}
+                      </Stack>
+                    </motion.div>
+                  )}
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
                   >
                     <Typography variant="subtitle2" color="textSecondary" gutterBottom>
                       Confidence
@@ -316,13 +372,13 @@ const Scanner: React.FC = () => {
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5 }}
+                      transition={{ delay: 0.7 }}
                     >
                       <Typography variant="subtitle2" color="textSecondary" gutterBottom>
                         Text Found
                       </Typography>
                       <List dense>
-                        {result.text_found.map((text: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined, index: React.Key | null | undefined) => (
+                        {result.text_found.map((text, index) => (
                           <ListItem key={index}>
                             <ListItemText
                               primary={text}

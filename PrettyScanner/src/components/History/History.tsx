@@ -13,7 +13,7 @@ const History: React.FC<HistoryProps> = ({ scanResults }) => {
 				{scanResults.map((result, index) => (
 					<li key={index}>
 						<p>Type: {result.type}</p>
-						<p>Price: {result.price}</p>
+						<p>Price: {result.suggested_price}</p>
 						<p>Text: {result.text_found}</p>
 					</li>
 				))}
