@@ -1,8 +1,11 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+
 namespace Inventory.Services;
 
 public interface ICurrentUserService
 {
-    long? GetCurrentUserId();
+    Guid? GetCurrentUserId();
     long? GetCurrentOrganizationId();
     string? GetUserEmail();
 }
@@ -16,16 +19,16 @@ public class CurrentUserService : ICurrentUserService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public long? GetCurrentUserId()
+    public Guid? GetCurrentUserId()
     {
         var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-        return userId != null ? long.Parse(userId) : (long?)null;
+        return userId != null ? Guid.Parse(userId) : null;
     }
 
     public long? GetCurrentOrganizationId()
     {
         var organizationId = _httpContextAccessor.HttpContext?.User?.FindFirstValue("OrganizationId");
-        return organizationId != null ? long.Parse(organizationId) : (long?)null;
+        return organizationId != null ? long.Parse(organizationId) : null;
     }
 
     public string? GetUserEmail()
@@ -33,4 +36,3 @@ public class CurrentUserService : ICurrentUserService
         return _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Email);
     }
 }
-

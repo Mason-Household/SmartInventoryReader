@@ -40,7 +40,7 @@ public class TenantMiddleware(RequestDelegate next)
         if (userId.HasValue)
         {
             var userOrg = await dbContext.UserOrganizations
-                .FirstOrDefaultAsync(uo => uo.UserId == userId);
+                .FirstOrDefaultAsync(uo => uo.UserId.ToString() == userId.ToString());
 
             return userOrg?.OrganizationId;
         }

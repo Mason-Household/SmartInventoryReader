@@ -12,7 +12,7 @@ public class SaveItemCommand : IRequest<Item>
     public int StockQuantity { get; set; }
     public int? LowStockThreshold { get; set; }
     public string? Barcode { get; set; }
-    public Guid? CategoryId { get; set; }
+    public long? CategoryId { get; set; }
     public List<string> TagNames { get; set; } = [];
     public string? Notes { get; set; }
 }
@@ -22,7 +22,6 @@ public class SaveItemCommandHandler(
     IRepository<Tag> _tagRepository
 ) : IRequestHandler<SaveItemCommand, Item>
 {
-
     public async Task<Item> Handle(
         SaveItemCommand request, 
         CancellationToken cancellationToken
@@ -30,7 +29,6 @@ public class SaveItemCommandHandler(
     {
         var item = new Item
         {
-            Id = Guid.NewGuid(),
             Name = request.Name,
             SuggestedPrice = request.SuggestedPrice,
             ActualPrice = request.ActualPrice,

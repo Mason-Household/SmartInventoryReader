@@ -2,7 +2,7 @@ namespace Inventory.Models;
 
 public class Item : AuditableEntity
 {
-    public long Id { get; set; }
+    public new long Id { get; set; }
     public string Name { get; set; } = null!;
     public decimal? SuggestedPrice { get; set; }
     public decimal ActualPrice { get; set; }

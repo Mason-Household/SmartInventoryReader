@@ -8,21 +8,26 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Inventory.Data
 {
-    public record AppDbContext(ICurrentUserService CurrentUserService, IApplicationBuilder Builder, DbSet<Tag> Tags, DbSet<Organization> Organizations, DbSet<InventoryItem> InventoryItems, DbSet<UserOrganization> UserOrganizations) : IdentityDbContext<ApplicationUser, IdentityRole<long>, long>
+    public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
     {
-        private readonly ICurrentUserService _currentUserService = CurrentUserService;
+        private readonly ICurrentUserService _currentUserService;
         private readonly long? _currentOrganizationId;
+
+        public DbSet<Tag> Tags { get; set; } = null!;
+        public DbSet<Organization> Organizations { get; set; } = null!;
+        public DbSet<Item> Items { get; set; } = null!;
+        public DbSet<Category> Categories { get; set; } = null!;
+        public DbSet<PriceHistory> PriceHistories { get; set; } = null!;
+        public DbSet<ItemImage> ItemImages { get; set; } = null!;
+        public DbSet<InventoryTransaction> InventoryTransactions { get; set; } = null!;
+        public DbSet<UserOrganization> UserOrganizations { get; set; } = null!;
 
         public AppDbContext(
             DbContextOptions<AppDbContext> options,
-            ICurrentUserService currentUserService) : this(default, default, default, default)
+            ICurrentUserService currentUserService) : base(options)
         {
             _currentUserService = currentUserService;
             _currentOrganizationId = currentUserService.GetCurrentOrganizationId();
-        }
-
-        public AppDbContext(DbContextOptions options) : base(options)
-        {
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
