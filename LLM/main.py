@@ -1,21 +1,21 @@
-from transformers import pipeline
-import torch
-from fastapi import FastAPI, File, UploadFile
-from PIL import Image
 import io
+import re
 import cv2
-import numpy as np
-from pyzbar.pyzbar import decode
+import torch
 import easyocr
+import numpy as np
+from PIL import Image
+from pyzbar.pyzbar import decode
+from transformers import pipeline
 from dataclasses import dataclass
 from typing import Optional, List, Dict
-import re
+from fastapi import FastAPI, File, UploadFile
 
 app = FastAPI()
 
 @dataclass
 class ScanResult:
-    type: str  # 'barcode', 'qrcode', 'image'
+    type: str  # 'barcode', 'qrcode', 'image', 'text
     price: Optional[float]
     confidence: float
     additional_info: Dict
@@ -42,7 +42,8 @@ class PriceRecognitionSystem:
             "athletic": (60, 120),
             "running": (80, 160),
             "basketball": (90, 200),
-            "luxury": (200, 500)
+            "luxury": (200, 500),
+            "sneaker": (50, 700)
         }
 
     def preprocess_image(self, image_bytes):
@@ -101,6 +102,8 @@ class PriceRecognitionSystem:
                     sneaker_type = "basketball"
                 elif "luxury" in pred['label'].lower():
                     sneaker_type = "luxury"
+                elif "sneaker" in pred['label'].lower():
+                    sneaker_type = "sneaker"
                 break
         
         price_range = self.sneaker_price_ranges[sneaker_type]
