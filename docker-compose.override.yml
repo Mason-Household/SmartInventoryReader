@@ -1,6 +1,7 @@
 services:
-  build:
-      context: ./SmartInventoryScanner
+  backend:
+    build:
+      context: ./Backend
       dockerfile: Dockerfile
   
   llm-service:
