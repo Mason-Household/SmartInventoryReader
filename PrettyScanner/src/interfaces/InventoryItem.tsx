@@ -1,13 +1,16 @@
 export interface InventoryItem {
-	id?: string;
+	id?: number;
 	name: string;
 	suggestedPrice: number | null;
 	actualPrice: number;
-	type: 'product' | 'menu_item';
-	category?: string;
-	confidence: number;
-	dateAdded: string;
-	source: 'scan' | 'manual';
+	stockQuantity: number;
+	lowStockThreshold: number | null;
+	barcode: string | null;
+	categoryId: number | null;
+	tagNames: string[];
 	notes?: string;
-	tags?: string[];
+	confidence: number;
+	dateAdded?: string;
+	source: 'scan' | 'manual';
+	organizationId?: number;
 }
