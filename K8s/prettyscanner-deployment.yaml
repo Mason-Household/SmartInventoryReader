@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prettyscanner-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: prettyscanner
+  template:
+    metadata:
+      labels:
+        app: prettyscanner
+    spec:
+      containers:
+      - name: prettyscanner
+        image: fivemowner/smart-inventory-reader-frontend:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: VITE_API_URL
+          value: http://localhost:5000
