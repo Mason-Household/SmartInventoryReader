@@ -1,5 +1,5 @@
-using System.Linq.Expressions;
 using Inventory.Data;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Inventory.Repositories;

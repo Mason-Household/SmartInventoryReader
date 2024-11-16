@@ -1,23 +1,17 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
 
 namespace Inventory.Services;
 
 public interface ICurrentUserService
 {
+    string? GetUserEmail();
     Guid? GetCurrentUserId();
     long? GetCurrentOrganizationId();
-    string? GetUserEmail();
 }
 
-public class CurrentUserService : ICurrentUserService
+public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICurrentUserService
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
-    public CurrentUserService(IHttpContextAccessor httpContextAccessor)
-    {
-        _httpContextAccessor = httpContextAccessor;
-    }
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
     public Guid? GetCurrentUserId()
     {

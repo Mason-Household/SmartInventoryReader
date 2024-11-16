@@ -1,13 +1,8 @@
-using FluentValidation;
 using MediatR;
+using FluentValidation;
 using Inventory.Models;
-using Inventory.Repositories;
 using Inventory.Services;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Linq;
+using Inventory.Repositories;
 
 namespace Inventory.Queries;
 
@@ -45,23 +40,18 @@ public class GetItemsQueryHandler(
         CancellationToken cancellationToken
     )
     {
-        var organizationId = _currentUserService.GetCurrentOrganizationId();
-        if (organizationId == null)
-        {
-            throw new UnauthorizedAccessException("User is not associated with any organization");
-        }
-
+        var organizationId = _currentUserService.GetCurrentOrganizationId() ?? throw new UnauthorizedAccessException("User is not associated with any organization");
         var organization = await _organizationRepository.GetAsync(o => o.Id == organizationId);
-        var org = organization.FirstOrDefault() ?? 
+        if (!organization.Any())
             throw new InvalidOperationException("Organization not found");
-
+        
+        var org = organization[0];
         var items = await _itemRepository.GetAsync(
             i => i.Organization.Id == organizationId &&
                  (request.CategoryId == null || i.CategoryId == request.CategoryId) &&
                  (request.SearchTerm == null || i.Name.Contains(request.SearchTerm))
         );
 
-        // Apply sorting if specified
         var query = items.AsQueryable();
         if (!string.IsNullOrEmpty(request.SortBy))
         {
@@ -74,10 +64,10 @@ public class GetItemsQueryHandler(
             }
         }
 
-        // Apply pagination
-        return query
+        return [
+            .. query
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
-            .ToList();
+        ];
     }
 }
