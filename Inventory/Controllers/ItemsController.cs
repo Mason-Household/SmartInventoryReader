@@ -1,9 +1,8 @@
 using MediatR;
-using Inventory.Properties;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Inventory.Application.Commands;
 using Inventory.Queries;
+using Inventory.Commands;
+using Inventory.Properties;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Inventory.Controllers;
 
