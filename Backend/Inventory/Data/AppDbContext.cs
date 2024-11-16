@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Inventory.Data
 {
-    public record AppDbContext(ICurrentUserService CurrentUserService, IApplicationBuilder DbSet<Tag> Tags, DbSet<Organization> Organizations, DbSet<InventoryItem> InventoryItems, DbSet<UserOrganization> UserOrganizations) : IdentityDbContext<ApplicationUser, IdentityRole<long>, long>
+    public record AppDbContext(ICurrentUserService CurrentUserService, IApplicationBuilder Builder, DbSet<Tag> Tags, DbSet<Organization> Organizations, DbSet<InventoryItem> InventoryItems, DbSet<UserOrganization> UserOrganizations) : IdentityDbContext<ApplicationUser, IdentityRole<long>, long>
     {
         private readonly ICurrentUserService _currentUserService = CurrentUserService;
         private readonly long? _currentOrganizationId;

@@ -25,9 +25,10 @@ COPY --from=build /app/out .
 # Expose the port the app runs on
 EXPOSE 80
 
-ENV JWT_SECRET_KEY=
-ENV JWT_ISSUER=
-ENV JWT_AUDIENCE=
+ENV JWT_SECRET_KEY=$JWT_SECRET_KEY
+ENV JWT_ISSUER=$JWT_ISSUER
+ENV JWT_AUDIENCE=$JWT_AUDIENCE
+ENV JWT_EXPIRATION_IN_MINUTES=$JWT_EXPIRATION
 
 # Run the application
-ENTRYPOINT ["dotnet", "YourProjectName.dll"]
+ENTRYPOINT ["dotnet", "Inventory.dll"]
