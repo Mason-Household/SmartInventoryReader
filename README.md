@@ -63,6 +63,18 @@
 ---------------------------------------------
 ---------------------------------------------
 
+## Authentication 🔒
+
+- The application uses Hugging Face tokens for authentication.
+- To obtain a Hugging Face token, visit [Hugging Face Token](https://huggingface.co/settings/tokens) and generate a new token.
+- Ensure you have set the environment variables correctly in the .env file with your Hugging Face token.
+- The application also supports logging in with Google or Apple, as well as using your email and password.
+- For Google or Apple login, follow the respective OAuth2 flow and set the required environment variables for client IDs and secrets.
+- The tokens are used to secure the API endpoints and manage user sessions.
+
+---------------------------------------------
+---------------------------------------------
+
 ## Running Individual Parts 🧩
 
 - Backend API 🖥️
@@ -78,10 +90,7 @@
         dotnet restore; dotnet build; dotnet run
     ```
 
----------------------------------------------
----------------------------------------------
-
-## Frontend Application 🌐
+### Frontend Application 🌐
 
 - Navigate to the PrettyScanner directory:
 
@@ -98,7 +107,7 @@
 ---------------------------------------------
 ---------------------------------------------
 
-## LLM Service 🤖
+### LLM Service 🤖
 
 - Navigate to the LLM directory:
 
