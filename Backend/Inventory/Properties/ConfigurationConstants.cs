@@ -9,8 +9,11 @@ public class ConfigurationConstants
     public const string JwtAudience = "Jwt:Audience";
     public const string JwtExpiryIn = "Jwt:ExpiryIn";
     public const string JwtRefreshToken = "Jwt:Refresh";
+    public const string FullLogFilePath = "logs/log-.txt"; 
     public const string AuthenticationScheme = "Bearer";
+    public const string MigrationsAssembly = "Inventory";
     public const string MongoDbSettings = "MongoDbSettings";
+    public const string DefaultConnection = "DefaultConnection";
     public const string ConnectionStringKey = "MongoDbSettings:ConnectionString";
 
     public class SwaggerConfig
@@ -18,4 +21,17 @@ public class ConfigurationConstants
         public const string Version = "v1";
         public const string Title = "Smart Inventory Scanner";
     }
+
+    public class JwtConfig
+    {
+        public const string Description = "JWT Authorization header using the Bearer scheme";
+        public const string SecurityScheme = "Authorization";
+
+        public class Claims
+        {
+            public const string UserId = "UserId";
+            public const string Role = "Role";
+        }
+    }
+
 }
