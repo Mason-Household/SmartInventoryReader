@@ -17,12 +17,12 @@ public class InventoryItem
 
 public enum InventoryItemType
 {
-    Product,
-    MenuItem
+    Product = "Product",
+    MenuItem = "MenuItem"
 }
 
 public enum InventoryItemSource
 {
-    Scan,
-    Manual
+    Scan = "Scan",
+    Manual = "Manual"
 }
