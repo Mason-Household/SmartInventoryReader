@@ -104,9 +104,6 @@
         npm install; npm run dev
     ```
 
----------------------------------------------
----------------------------------------------
-
 ### LLM Service 🤖
 
 - Navigate to the LLM directory:
