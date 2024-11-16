@@ -18,7 +18,7 @@ services:
       retries: 120
       start_period: 30s
 
-  backend:
+  inventory:
     image: fivemowner/smart-inventory-reader-backend:latest
     ports:
       - "5000:5000"
@@ -49,7 +49,7 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - backend
+      - inventory
     environment:
       - VITE_API_URL=http://localhost:5000
     healthcheck:
