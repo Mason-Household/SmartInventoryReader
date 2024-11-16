@@ -1,7 +1,7 @@
 services:
-  backend:
+  inventory:
     build:
-      context: ./Backend
+      context: ./Inventory
       dockerfile: Dockerfile
   
   llm-service:
