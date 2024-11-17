@@ -1,16 +1,26 @@
+using System.Diagnostics.CodeAnalysis;
 using Inventory.Extensions;
 
-var builder = WebApplication.CreateBuilder(args);
+namespace Inventory;
 
-builder.ConfigureLogging();
-builder.ConfigureServices();
-builder.ConfigureAuthentication();
-builder.ConfigureSwagger();
-builder.ConfigureDatabase();
+[ExcludeFromCodeCoverage]
+public static class Program
+{
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
 
-var app = builder.Build();
+        builder.ConfigureLogging();
+        builder.ConfigureServices();
+        builder.ConfigureAuthentication();
+        builder.ConfigureSwagger();
+        builder.ConfigureDatabase();
 
-app.ConfigureMiddleware();
-app.ConfigureEndpoints();
+        var app = builder.Build();
 
-app.Run();
+        app.ConfigureMiddleware();
+        app.ConfigureEndpoints();
+
+        app.Run();
+    }
+}

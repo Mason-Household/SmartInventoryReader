@@ -16,13 +16,15 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICur
     public Guid? GetCurrentUserId()
     {
         var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-        return userId != null ? Guid.Parse(userId) : null;
+        if (Guid.TryParse(userId, out var result)) return result;
+        return null;
     }
 
     public long? GetCurrentOrganizationId()
     {
         var organizationId = _httpContextAccessor.HttpContext?.User?.FindFirstValue("OrganizationId");
-        return organizationId != null ? long.Parse(organizationId) : null;
+        if (long.TryParse(organizationId, out var result)) return result;
+        return null;
     }
 
     public string? GetUserEmail()

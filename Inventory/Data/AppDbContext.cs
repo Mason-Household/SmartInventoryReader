@@ -1,13 +1,14 @@
-using System.Linq.Expressions;
-using Inventory.Domain;
 using Inventory.Models;
 using Inventory.Services;
+using System.Linq.Expressions;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace Inventory.Data
 {
+    [ExcludeFromCodeCoverage]
     public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
     {
         private readonly ICurrentUserService _currentUserService;
