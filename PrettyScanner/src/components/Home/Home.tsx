@@ -154,12 +154,6 @@ const Home: React.FC = () => {
       description: 'View your previous scans',
       onClick: () => navigate('/history'),
     },
-    {
-      icon: <Settings size={32} />,
-      title: 'Settings',
-      description: 'Configure app preferences',
-      onClick: () => navigate('/settings'),
-    },
   ];
 
   return (
