@@ -21,7 +21,6 @@ import {
   QrCode,
   Image as ImageIcon,
   TrendingUp,
-  Settings,
 } from 'lucide-react';
 import BarcodeIcon from 'feather-icons/dist/icons/barcode.svg';
 import { useNavigate } from 'react-router-dom';

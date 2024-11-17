@@ -20,7 +20,6 @@ import {
   Menu as MenuIcon,
   Home,
   History,
-  Settings,
   LogOut,
   Github as GitHubIcon,
 } from 'lucide-react';
@@ -45,7 +44,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const menuItems = [
     { icon: <Home color={iconColor} />, text: 'Home', path: '/' },
     { icon: <History color={iconColor} />, text: 'Scan History', path: '/history' },
-    { icon: <Settings color={iconColor} />, text: 'Settings', path: '/settings' },
     { icon: <Box color={iconColor}><HelpOutline /></Box>, text: 'Help', path: '/help' },
   ];
 
