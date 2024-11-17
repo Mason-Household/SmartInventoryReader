@@ -22,9 +22,9 @@ import {
   History,
   Settings,
   LogOut,
+  Github as GitHubIcon,
 } from 'lucide-react';
 import ErrorBoundary from '../Errors/ErrorBoundary';
-import { Github as GitHubIcon } from 'lucide-react';
 import HelpOutline from '../HelpOutline/HelpOutline';
 import { motion, AnimatePresence } from 'framer-motion';
 import ThemeSelector from '../ThemeSelector/ThemeSelector';
@@ -40,11 +40,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const { logout, organization } = useAuth();
 
+  const iconColor = theme.palette.mode === 'light' ? 'black' : 'inherit';
+
   const menuItems = [
-    { icon: <Home />, text: 'Home', path: '/' },
-    { icon: <History />, text: 'Scan History', path: '/history' },
-    { icon: <Settings />, text: 'Settings', path: '/settings' },
-    { icon: <HelpOutline />, text: 'Help', path: '/help' },
+    { icon: <Home color={iconColor} />, text: 'Home', path: '/' },
+    { icon: <History color={iconColor} />, text: 'Scan History', path: '/history' },
+    { icon: <Settings color={iconColor} />, text: 'Settings', path: '/settings' },
+    { icon: <Box color={iconColor}><HelpOutline /></Box>, text: 'Help', path: '/help' },
   ];
 
   const handleDrawerToggle = () => {
@@ -75,6 +77,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           backgroundColor: 'rgba(255, 255, 255, 0.8)',
           borderBottom: `1px solid ${theme.palette.divider}`,
         }}
+        style={{
+          color: theme.palette.mode === 'light' ? 'black' : 'inherit',
+        }}
       >
         <Toolbar>
           {isMobile && (
@@ -85,7 +90,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               onClick={handleDrawerToggle}
               sx={{ mr: 2 }}
             >
-              <MenuIcon />
+              <MenuIcon color={iconColor} />
             </IconButton>
           )}
 
@@ -145,7 +150,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <ThemeSelector />
             <Tooltip title="Logout" arrow>
               <IconButton color="inherit" onClick={logout}>
-                <LogOut />
+                <LogOut color={iconColor} />
               </IconButton>
             </Tooltip>
           </Box>
@@ -159,7 +164,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               rel="noopener noreferrer"
               sx={{ ml: 1 }}
             >
-              <GitHubIcon />
+              <GitHubIcon color={iconColor} />
             </IconButton>
           </Tooltip>
         </Toolbar>
@@ -217,7 +222,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             }}
             button
           >
-            <ListItemIcon><LogOut /></ListItemIcon>
+            <ListItemIcon><LogOut color={iconColor} /></ListItemIcon>
             <ListItemText primary="Logout" />
           </ListItem>
         </List>

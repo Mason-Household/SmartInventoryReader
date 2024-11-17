@@ -17,16 +17,6 @@ export type CustomTheme = {
 export const themePresets: ThemePreset[] = [
   {
     id: 'default',
-    name: 'Midnight',
-    primary: '#3f51b5',
-    secondary: '#7c4dff',
-    background: '#303030',
-    paper: '#424242',
-    accentLight: '#7986cb',
-    accentDark: '#b388ff'
-  },
-  {
-    id: 'nature',
     name: 'Nature',
     primary: '#4caf50',
     secondary: '#8bc34a',
