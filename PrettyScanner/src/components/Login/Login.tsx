@@ -69,7 +69,7 @@ const Login: React.FC = () => {
 
     try {
       if (isRegistering) {
-        await registerWithEmail(email, password);
+        await registerWithEmail(email, password, organization);
       } else {
         await loginWithEmail(email, password);
       }
