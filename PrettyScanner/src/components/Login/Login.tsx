@@ -114,7 +114,7 @@ const Login: React.FC = () => {
         }}
       >
         <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
-          Sign in to Sneaker Scanner
+          Sign in to Inventory Scanner
         </Typography>
 
         {error && (

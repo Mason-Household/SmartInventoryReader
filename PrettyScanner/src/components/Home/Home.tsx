@@ -11,6 +11,7 @@ import {
   Paper,
   Tooltip,
   alpha,
+  Container,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -162,152 +163,164 @@ const Home: React.FC = () => {
   ];
 
   return (
-    <Box
-      component={motion.div}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      sx={{ p: { xs: 2, sm: 3 } }}
-    >
-      {/* Welcome Section */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Welcome to Sneaker Scanner
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Quickly scan and price check your sneakers using AI-powered image recognition
-        </Typography>
-      </Box>
+    <Container maxWidth="lg">
+      <Box
+        component={motion.div}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        sx={{ 
+          p: { xs: 2, sm: 3 },
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        {/* Welcome Section */}
+        <Box sx={{ mb: 4, textAlign: 'center', width: '100%' }}>
+          <Typography variant="h4" gutterBottom>
+            Welcome to Inventory Scanner
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Quickly scan and price check your sneakers using AI-powered image recognition
+          </Typography>
+        </Box>
 
-      {/* Quick Actions */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h6" gutterBottom>
-          Quick Actions
-        </Typography>
+        {/* Quick Actions */}
+        <Box sx={{ mb: 4, width: '100%' }}>
+          <Typography variant="h6" gutterBottom sx={{ textAlign: 'center' }}>
+            Quick Actions
+          </Typography>
+          <Box sx={{ 
+            display: 'flex', 
+            flexWrap: 'wrap', 
+            gap: isMobile ? 2 : 3,
+            justifyContent: 'center',
+          }}>
+            {quickActions.map((action, index) => (
+              <Box 
+                key={action.title}
+                sx={{ 
+                  flex: isMobile ? '1 1 100%' : '1 1 calc(25% - 24px)',
+                  minWidth: isMobile ? 'auto' : '200px',
+                  maxWidth: isMobile ? 'none' : '280px',
+                }}
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <QuickAction {...action} />
+                </motion.div>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
+        {/* Recent Scans and Stats */}
         <Box sx={{ 
           display: 'flex', 
-          flexWrap: 'wrap', 
+          flexDirection: isMobile ? 'column' : 'row',
           gap: isMobile ? 2 : 3,
+          width: '100%',
+          justifyContent: 'center',
         }}>
-          {quickActions.map((action, index) => (
-            <Box 
-              key={action.title}
-              sx={{ 
-                flex: isMobile ? '1 1 100%' : '1 1 calc(25% - 24px)',
-                minWidth: isMobile ? 'auto' : '200px',
-              }}
-            >
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <QuickAction {...action} />
-              </motion.div>
-            </Box>
-          ))}
-        </Box>
-      </Box>
-
-      {/* Recent Scans and Stats */}
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: isMobile ? 'column' : 'row',
-        gap: isMobile ? 2 : 3,
-      }}>
-        {/* Recent Scans */}
-        <Box sx={{ flex: isMobile ? '1' : '2' }}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Recent Scans
-              </Typography>
-              <AnimatePresence>
-                {recentScans.map((scan, index) => (
-                  <motion.div
-                    key={scan.timestamp}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ delay: index * 0.1 }}
+          {/* Recent Scans */}
+          <Box sx={{ flex: isMobile ? '1' : '2', width: '100%' }}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent>
+                <Typography variant="h6" gutterBottom sx={{ textAlign: 'center' }}>
+                  Recent Scans
+                </Typography>
+                <AnimatePresence>
+                  {recentScans.map((scan, index) => (
+                    <motion.div
+                      key={scan.timestamp}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <RecentScan {...scan} />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+                {recentScans.length > 0 && (
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    onClick={() => navigate('/history')}
+                    sx={{ mt: 2 }}
                   >
-                    <RecentScan {...scan} />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-              {recentScans.length > 0 && (
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => navigate('/history')}
-                  sx={{ mt: 2 }}
-                >
-                  View All Scans
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        </Box>
+                    View All Scans
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          </Box>
 
-        {/* Stats */}
-        <Box sx={{ flex: isMobile ? '1' : '1' }}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Statistics
-              </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <TrendingUp size={24} />
-                  <Box>
-                    <Typography variant="h4">
-                      {recentScans.length}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Total Scans
-                    </Typography>
-                  </Box>
-                </Box>
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexDirection: isMobile ? 'column' : 'row', 
-                  gap: 2 
-                }}>
-                  <Box sx={{ 
-                    flex: 1, 
-                    textAlign: 'center', 
-                    p: 2, 
-                    bgcolor: alpha(theme.palette.primary.main, 0.1), 
-                    borderRadius: 1 
-                  }}>
-                    <Typography variant="h6">
-                      {recentScans.filter(s => s.confidence > 0.9).length}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      High Confidence
-                    </Typography>
+          {/* Stats */}
+          <Box sx={{ flex: isMobile ? '1' : '1', width: '100%' }}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent>
+                <Typography variant="h6" gutterBottom sx={{ textAlign: 'center' }}>
+                  Statistics
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <TrendingUp size={24} />
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="h4">
+                        {recentScans.length}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Total Scans
+                      </Typography>
+                    </Box>
                   </Box>
                   <Box sx={{ 
-                    flex: 1, 
-                    textAlign: 'center', 
-                    p: 2, 
-                    bgcolor: alpha(theme.palette.secondary.main, 0.1), 
-                    borderRadius: 1 
+                    display: 'flex', 
+                    flexDirection: isMobile ? 'column' : 'row', 
+                    gap: 2,
+                    width: '100%',
                   }}>
-                    <Typography variant="h6">
-                      ${recentScans.reduce((acc, curr) => acc + curr.price, 0).toFixed(2)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Total Value
-                    </Typography>
+                    <Box sx={{ 
+                      flex: 1, 
+                      textAlign: 'center', 
+                      p: 2, 
+                      bgcolor: alpha(theme.palette.primary.main, 0.1), 
+                      borderRadius: 1 
+                    }}>
+                      <Typography variant="h6">
+                        {recentScans.filter(s => s.confidence > 0.9).length}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        High Confidence
+                      </Typography>
+                    </Box>
+                    <Box sx={{ 
+                      flex: 1, 
+                      textAlign: 'center', 
+                      p: 2, 
+                      bgcolor: alpha(theme.palette.secondary.main, 0.1), 
+                      borderRadius: 1 
+                    }}>
+                      <Typography variant="h6">
+                        ${recentScans.reduce((acc, curr) => acc + curr.price, 0).toFixed(2)}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Total Value
+                      </Typography>
+                    </Box>
                   </Box>
                 </Box>
-              </Box>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Box>
         </Box>
       </Box>
-    </Box>
+    </Container>
   );
 };
 
