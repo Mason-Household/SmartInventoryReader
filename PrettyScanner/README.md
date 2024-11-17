@@ -63,6 +63,8 @@
 
 ## Running the Frontend Application Locally 🌐
 
+- Create a firebase project and place the firebase.ts file in PrettyScanner/src/config/firebase.ts for authentication
+
 - Navigate to the PrettyScanner directory:
 
     ```powershell
