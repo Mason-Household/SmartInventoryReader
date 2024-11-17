@@ -152,6 +152,17 @@ const Login: React.FC = () => {
               margin="normal"
               required
               fullWidth
+              id="organization"
+              label="Organization"
+              name="organization"
+              autoComplete="organization"
+              value={organization}
+              onChange={(e) => setOrganization(e.target.value)}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
               id="email"
               label="Email Address"
               name="email"
