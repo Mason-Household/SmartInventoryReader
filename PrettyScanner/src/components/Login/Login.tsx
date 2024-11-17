@@ -12,8 +12,9 @@ import {
   Tab,
   Divider,
 } from '@mui/material';
-import { Chrome, Apple } from 'lucide-react';
+import { Chrome } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { Organization } from '@/interfaces/Organization';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -52,7 +53,6 @@ const Login: React.FC = () => {
   
   const { 
     loginWithGoogle, 
-    loginWithApple, 
     loginWithEmail, 
     registerWithEmail, 
     loginWithHuggingFace 
@@ -83,7 +83,14 @@ const Login: React.FC = () => {
     setError('');
 
     try {
-      await loginWithHuggingFace(hfToken, organization);
+      const org: Organization = {
+        name: organization,
+        slug: organization.toLowerCase().replace(/\s/g, '-'),
+        createdAt: new Date(),
+        isActive: true,
+        id: undefined
+      }; // Assuming Organization has a 'name' property
+      await loginWithHuggingFace(hfToken, org);
     } catch (err) {
       setError('Invalid credentials. Please check your token and organization.');
     }
@@ -125,14 +132,6 @@ const Login: React.FC = () => {
             sx={{ mb: 2 }}
           >
             Continue with Google
-          </Button>
-          <Button
-            fullWidth
-            variant="outlined"
-            startIcon={<Apple size={20} />}
-            onClick={() => loginWithApple()}
-          >
-            Continue with Apple
           </Button>
         </Box>
 

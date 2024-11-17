@@ -1,50 +1,118 @@
-# React + TypeScript + Vite
+# PrettyScanner 📸📦
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**A camera-enabled scanner that prioritizes barcodes, QR codes, and general image searches to determine an item's price before giving the user the choice to add it to their manageable inventory.**
 
-Currently, two official plugins are available:
+---------------------------------------------
+---------------------------------------------
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Technologies Used 🛠️
 
-## Expanding the ESLint configuration
+- React + TypeScript + Vite: Frontend application
+- Firebase: Authentication and storage
+- Lucide Icons: Icons for UI
+- Material-UI: UI components
+- Docker: Containerization
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+---------------------------------------------
+---------------------------------------------
 
-- Configure the top-level `parserOptions` property like this:
+## Prerequisites 📋
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+- Docker: Ensure Docker is installed and running.
+- Node.js: Install from here.
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+---------------------------------------------
+---------------------------------------------
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## Running the Project 🚀
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+1. Clone the Repository 🧑‍💻
+
+    ```powershell
+    git clone https://github.com/Mason-Household/SmartInventoryReader.git
+    cd SmartInventoryReader/PrettyScanner
+    ```
+
+2. Set Up Environment Variables 🌍
+
+    Create a `.env` file in the `PrettyScanner` directory and add the following:
+
+    ```env
+    VITE_FIREBASE_API_KEY=your_api_key
+    VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+    VITE_FIREBASE_PROJECT_ID=your_project_id
+    VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+    VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+    VITE_FIREBASE_APP_ID=your_app_id
+    VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
+    VITE_API_URL=http://localhost:5000
+    ```
+
+3. Build and Run with Docker 🐳
+
+    ```powershell
+    docker-compose up --build -d
+    ```
+
+4. Access the Frontend 🌐
+
+- Frontend: <http://localhost:3000>
+
+---------------------------------------------
+---------------------------------------------
+
+## Running the Frontend Application Locally 🌐
+
+- Navigate to the PrettyScanner directory:
+
+    ```powershell
+    cd PrettyScanner
+    ```
+
+- Install dependencies and start the development server:
+
+    ```powershell
+    npm install; npm run dev
+    ```
+
+---------------------------------------------
+---------------------------------------------
+
+## Troubleshooting 🛠️
+
+- Common Issues and Solutions:
+
+- Docker Build Failures:
+  - Ensure Docker is running.
+  - Check for any syntax errors in Dockerfile or docker-compose.yml.
+
+- Frontend Not Loading:
+  - Ensure all dependencies are installed.
+  - Check the console for any errors.
+
+- Logs and Monitoring 📊
+  - Frontend Logs: Use the browser console for any frontend errors.
+
+---------------------------------------------
+---------------------------------------------
+
+## Why These Technologies? 🤔
+
+- React + TypeScript + Vite: Ensures a fast and modern frontend development experience.
+- Firebase: Provides robust authentication and storage solutions.
+- Lucide Icons: Offers a wide range of icons for UI.
+- Material-UI: Provides a set of UI components for faster development.
+- Docker: Ensures consistent environments across different stages of development.
+
+---------------------------------------------
+---------------------------------------------
+
+## Contributing 🤝
+
+**I welcome a contribution! If you can do it better, especially the front end, please submit a PR and I'll review it with appreciation!!!**
+
+- License 📜
+
+    ```txt
+    This project is licensed under the MIT License.
+    ```

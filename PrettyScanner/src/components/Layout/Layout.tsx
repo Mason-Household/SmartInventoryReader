@@ -117,7 +117,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 display: { xs: 'none', sm: 'block' },
               }}
             >
-              {organization}
+              {organization.name}
             </Typography>
           )}
 
@@ -184,7 +184,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </Typography>
           {organization && (
             <Typography variant="body2" color="text.secondary">
-              {organization}
+              {organization.name}
             </Typography>
           )}
         </Box>
@@ -265,6 +265,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         }}
       >
         <Container maxWidth="lg">
+          <iframe src="https://github.com/sponsors/Mason-Household/card" title="Sponsor Mason-Household" height="225" width="600" style={{ border: 0 }}></iframe>
           <Typography variant="body2" color="text.secondary" align="center">
             © {new Date().getFullYear()} Sneaker Scanner. All rights reserved.
           </Typography>

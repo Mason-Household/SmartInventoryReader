@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   signInWithPopup,
   GoogleAuthProvider,
-  OAuthProvider,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -10,15 +9,17 @@ import {
   User,
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
+import { Organization } from '../interfaces/Organization';
 
 interface AuthContextType {
   user: User | null;
-  organization: string | null;
+  organization: Organization | null;
+  organizations: Organization[];
+  setCurrentOrganization: (org: Organization) => void;
   loginWithGoogle: () => Promise<void>;
-  loginWithApple: () => Promise<void>;
   loginWithEmail: (email: string, password: string) => Promise<void>;
   registerWithEmail: (email: string, password: string) => Promise<void>;
-  loginWithHuggingFace: (token: string, org: string) => Promise<void>;
+  loginWithHuggingFace: (token: string, org: Organization) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
@@ -27,39 +28,65 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [organization, setOrganization] = useState<string | null>(null);
+  const [organization, setOrganization] = useState<Organization | null>(null);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user: any) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user: User | null) => {
       setUser(user);
-      // Get organization from user's claims or localStorage
-      const org = localStorage.getItem('organization');
-      setOrganization(org);
+      if (user) {
+        // Load organizations from API
+        try {
+          const response = await fetch('api/organizations', {
+            headers: {
+              Authorization: `Bearer ${await user.getIdToken()}`
+            }
+          });
+          if (response.ok) {
+            const orgs: Organization[] = await response.json();
+            setOrganizations(orgs);
+            
+            // Load current organization from localStorage or use first available
+            const savedOrgId = localStorage.getItem('currentOrganizationId');
+            if (savedOrgId) {
+              const currentOrg = orgs.find(org => org.id === parseInt(savedOrgId));
+              if (currentOrg) {
+                setOrganization(currentOrg);
+              }
+            } else if (orgs.length > 0) {
+              setOrganization(orgs[0]);
+              if (orgs[0].id !== null && orgs[0].id !== undefined) {
+                localStorage.setItem('currentOrganizationId', orgs[0].id.toString());
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Failed to load organizations:', error);
+        }
+      } else {
+        setOrganizations([]);
+        setOrganization(null);
+        localStorage.removeItem('currentOrganizationId');
+      }
     });
 
     return () => unsubscribe();
   }, []);
+
+  const setCurrentOrganization = (org: Organization) => {
+    setOrganization(org);
+    if (org.id !== null && org.id !== undefined) {
+      localStorage.setItem('currentOrganizationId', org.id.toString());
+    }
+  };
 
   const loginWithGoogle = async () => {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       setUser(result.user);
-      // You might want to handle organization selection after successful login
     } catch (error) {
       console.error('Google login failed:', error);
-      throw error;
-    }
-  };
-
-  const loginWithApple = async () => {
-    try {
-      const provider = new OAuthProvider('apple.com');
-      const result = await signInWithPopup(auth, provider);
-      setUser(result.user);
-      // You might want to handle organization selection after successful login
-    } catch (error) {
-      console.error('Apple login failed:', error);
       throw error;
     }
   };
@@ -68,7 +95,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       setUser(result.user);
-      // You might want to handle organization selection after successful login
     } catch (error) {
       console.error('Email login failed:', error);
       throw error;
@@ -79,14 +105,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       setUser(result.user);
-      // You might want to handle organization selection after successful registration
     } catch (error) {
       console.error('Email registration failed:', error);
       throw error;
     }
   };
 
-  const loginWithHuggingFace = async (token: string, org: string) => {
+  const loginWithHuggingFace = async (token: string, org: Organization) => {
     try {
       // Validate token by making a request to HuggingFace
       const response = await fetch('https://huggingface.co/api/whoami', {
@@ -101,8 +126,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Store the token and organization
       localStorage.setItem('hf_token', token);
-      localStorage.setItem('organization', org);
       setOrganization(org);
+      setOrganizations([org]);
+      if (org.id !== null && org.id !== undefined
+          && org.id !== organization?.id) {
+        localStorage.setItem('currentOrganizationId', org.id.toString());
+      }
 
       // Create a custom user object since we're not using Firebase auth for HuggingFace
       const hfUserData = await response.json();
@@ -111,6 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: hfUserData.email,
         displayName: hfUserData.name,
         providerId: 'huggingface.co',
+        getIdToken: async () => token, // Add this to match Firebase User interface
       } as unknown as User;
       
       setUser(customUser);
@@ -124,9 +154,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await signOut(auth);
       localStorage.removeItem('hf_token');
-      localStorage.removeItem('organization');
+      localStorage.removeItem('currentOrganizationId');
       setUser(null);
       setOrganization(null);
+      setOrganizations([]);
     } catch (error) {
       console.error('Logout failed:', error);
       throw error;
@@ -138,8 +169,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         organization,
+        organizations,
+        setCurrentOrganization,
         loginWithGoogle,
-        loginWithApple,
         loginWithEmail,
         registerWithEmail,
         loginWithHuggingFace,
