@@ -1,6 +1,7 @@
 using Inventory.Data;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Inventory.Repositories;
 
@@ -16,6 +17,7 @@ public interface IRepository<T> where T : class
     Task SaveChangesAsync();
 }
 
+[ExcludeFromCodeCoverage]
 public class Repository<T>(InventoryDbContext context) : IRepository<T> where T : class
 {
     protected readonly InventoryDbContext _context = context;

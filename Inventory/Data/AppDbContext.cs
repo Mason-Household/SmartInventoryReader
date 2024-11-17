@@ -9,10 +9,12 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 namespace Inventory.Data
 {
     [ExcludeFromCodeCoverage]
-    public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
+    public class AppDbContext(
+        DbContextOptions<AppDbContext> options,
+        ICurrentUserService currentUserService) : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
     {
-        private readonly ICurrentUserService _currentUserService;
-        private readonly long? _currentOrganizationId;
+        private readonly ICurrentUserService _currentUserService = currentUserService;
+        private readonly long? _currentOrganizationId = currentUserService.GetCurrentOrganizationId();
 
         public DbSet<Tag> Tags { get; set; } = null!;
         public DbSet<Organization> Organizations { get; set; } = null!;
@@ -22,14 +24,6 @@ namespace Inventory.Data
         public DbSet<ItemImage> ItemImages { get; set; } = null!;
         public DbSet<InventoryTransaction> InventoryTransactions { get; set; } = null!;
         public DbSet<UserOrganization> UserOrganizations { get; set; } = null!;
-
-        public AppDbContext(
-            DbContextOptions<AppDbContext> options,
-            ICurrentUserService currentUserService) : base(options)
-        {
-            _currentUserService = currentUserService;
-            _currentOrganizationId = currentUserService.GetCurrentOrganizationId();
-        }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

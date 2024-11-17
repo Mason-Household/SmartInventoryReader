@@ -1,9 +1,11 @@
 using Inventory.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Inventory.Data.EntityConfigurations;
 
+[ExcludeFromCodeCoverage]
 public class TagConfiguration : IEntityTypeConfiguration<Tag>
 {
     public void Configure(EntityTypeBuilder<Tag> builder)

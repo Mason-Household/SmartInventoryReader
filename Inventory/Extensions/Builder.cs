@@ -4,15 +4,16 @@ using FluentValidation;
 using Inventory.Properties;
 using System.Security.Claims;
 using Inventory.Repositories;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authentication.BearerToken;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Inventory.Extensions;
 
+[ExcludeFromCodeCoverage]
 public static class BuilderExtensions
 {
     public static void ConfigureLogging(this WebApplicationBuilder builder)

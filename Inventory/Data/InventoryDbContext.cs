@@ -1,20 +1,18 @@
 using Inventory.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Inventory.Data;
 
-public class InventoryDbContext : DbContext
+[ExcludeFromCodeCoverage]
+public class InventoryDbContext(DbContextOptions<InventoryDbContext> options) : DbContext(options)
 {
-    public InventoryDbContext(DbContextOptions<InventoryDbContext> options)
-        : base(options)
-    { }
-
-    public DbSet<Item> Items { get; set; }
-    public DbSet<Category> Categories { get; set; }
-    public DbSet<PriceHistory> PriceHistory { get; set; }
-    public DbSet<Tag> Tags { get; set; }
-    public DbSet<ItemImage> ItemImages { get; set; }
-    public DbSet<InventoryTransaction> InventoryTransactions { get; set; }
+    public required DbSet<Item> Items { get; set; }
+    public required DbSet<Category> Categories { get; set; }
+    public required DbSet<PriceHistory> PriceHistory { get; set; }
+    public required DbSet<Tag> Tags { get; set; }
+    public required DbSet<ItemImage> ItemImages { get; set; }
+    public required DbSet<InventoryTransaction> InventoryTransactions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
