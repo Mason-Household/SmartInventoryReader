@@ -18,7 +18,7 @@ interface AuthContextType {
   setCurrentOrganization: (org: Organization) => void;
   loginWithGoogle: () => Promise<void>;
   loginWithEmail: (email: string, password: string) => Promise<void>;
-  registerWithEmail: (email: string, password: string) => Promise<void>;
+  registerWithEmail: (email: string, password: string, organizationName: string) => Promise<void>;
   loginWithHuggingFace: (token: string, org: Organization) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
@@ -35,34 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribe = onAuthStateChanged(auth, async (user: User | null) => {
       setUser(user);
       if (user) {
-        // Load organizations from API
-        try {
-          const response = await fetch('api/organizations', {
-            headers: {
-              Authorization: `Bearer ${await user.getIdToken()}`
-            }
-          });
-          if (response.ok) {
-            const orgs: Organization[] = await response.json();
-            setOrganizations(orgs);
-            
-            // Load current organization from localStorage or use first available
-            const savedOrgId = localStorage.getItem('currentOrganizationId');
-            if (savedOrgId) {
-              const currentOrg = orgs.find(org => org.id === parseInt(savedOrgId));
-              if (currentOrg) {
-                setOrganization(currentOrg);
-              }
-            } else if (orgs.length > 0) {
-              setOrganization(orgs[0]);
-              if (orgs[0].id !== null && orgs[0].id !== undefined) {
-                localStorage.setItem('currentOrganizationId', orgs[0].id.toString());
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Failed to load organizations:', error);
-        }
+        await loadOrganizations(user);
       } else {
         setOrganizations([]);
         setOrganization(null);
@@ -72,6 +45,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => unsubscribe();
   }, []);
+
+  const loadOrganizations = async (user: User) => {
+    try {
+      const response = await fetch('api/organizations', {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`
+        }
+      });
+      if (response.ok) {
+        const orgs: Organization[] = await response.json();
+        setOrganizations(orgs);
+        
+        // Load current organization from localStorage or use first available
+        const savedOrgId = localStorage.getItem('currentOrganizationId');
+        if (savedOrgId) {
+          const currentOrg = orgs.find(org => org.id === parseInt(savedOrgId));
+          if (currentOrg) {
+            setOrganization(currentOrg);
+          }
+        } else if (orgs.length > 0) {
+          setOrganization(orgs[0]);
+          if (orgs[0].id !== null && orgs[0].id !== undefined) {
+            localStorage.setItem('currentOrganizationId', orgs[0].id.toString());
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load organizations:', error);
+    }
+  };
 
   const setCurrentOrganization = (org: Organization) => {
     setOrganization(org);
@@ -85,6 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       setUser(result.user);
+      await loadOrganizations(result.user);
     } catch (error) {
       console.error('Google login failed:', error);
       throw error;
@@ -95,16 +99,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       setUser(result.user);
+      await loadOrganizations(result.user);
     } catch (error) {
       console.error('Email login failed:', error);
       throw error;
     }
   };
 
-  const registerWithEmail = async (email: string, password: string) => {
+  const registerWithEmail = async (email: string, password: string, organizationName: string) => {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       setUser(result.user);
+
+      // Create organization
+      const orgResponse = await fetch('api/organizations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await result.user.getIdToken()}`
+        },
+        body: JSON.stringify({ name: organizationName })
+      });
+
+      if (orgResponse.ok) {
+        const org: Organization = await orgResponse.json();
+        setOrganization(org);
+        setOrganizations([org]);
+        if (org.id !== null && org.id !== undefined) {
+          localStorage.setItem('currentOrganizationId', org.id.toString());
+        }
+      } else {
+        throw new Error('Failed to create organization');
+      }
     } catch (error) {
       console.error('Email registration failed:', error);
       throw error;
