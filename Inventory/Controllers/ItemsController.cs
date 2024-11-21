@@ -32,4 +32,8 @@ public class ItemsController(IMediator _mediator) : ControllerBase
         };
         return Ok(await _mediator.Send(query));
     }
+
+    [HttpDelete]
+    public async Task<IActionResult> DeleteItem([FromQuery] long id) => Ok(await _mediator.Send(new DeleteItemCommand(id)));
+    
 }

@@ -4,12 +4,16 @@ using FluentValidation;
 using Inventory.Properties;
 using System.Security.Claims;
 using Inventory.Repositories;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authentication.BearerToken;
+using System.Reflection;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Inventory.Extensions;
 
@@ -49,6 +53,29 @@ public static class BuilderExtensions
             options.GroupNameFormat = "'v'VVV";
             options.SubstituteApiVersionInUrl = true;
         });
+    }
+
+    public static void ConfigureMediatR(this WebApplicationBuilder builder)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
+        builder.Services.Scan(scan => scan
+            .FromAssemblies(assembly)
+            .AddClasses(classes => classes.AssignableTo(typeof(IRequest<>)))
+            .AsImplementedInterfaces()
+            .WithScopedLifetime());
+
+        builder.Services.Scan(scan => scan
+            .FromAssemblies(assembly)
+            .AddClasses(classes => classes.AssignableTo(typeof(IRequestHandler<,>)))
+            .AsImplementedInterfaces()
+            .WithScopedLifetime());
+
+        builder.Services.Scan(scan => scan
+            .FromAssemblies(assembly)
+            .AddClasses(classes => classes.AssignableTo(typeof(AbstractValidator<>)))
+            .AsImplementedInterfaces()
+            .WithScopedLifetime());
     }
 
     public static void ConfigureAuthentication(this WebApplicationBuilder builder)

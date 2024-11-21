@@ -47,7 +47,8 @@ public class GetItemsQueryHandler(
         
         var org = organization[0];
         var items = await _itemRepository.GetAsync(
-            i => i.Organization.Id == organizationId &&
+            i => !i.IsDeleted &&
+                 i.Organization.Id == organizationId &&
                  (request.CategoryId == null || i.CategoryId == request.CategoryId) &&
                  (request.SearchTerm == null || i.Name.Contains(request.SearchTerm))
         );

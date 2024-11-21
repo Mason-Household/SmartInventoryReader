@@ -15,7 +15,8 @@ public static class Program
         builder.ConfigureAuthentication();
         builder.ConfigureSwagger();
         builder.ConfigureDatabase();
-
+        builder.ConfigureMediatR();
+        
         var app = builder.Build();
 
         app.ConfigureMiddleware();

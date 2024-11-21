@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Inventory.Data.EntityConfigurations;
 
 namespace Inventory.Data
 {
@@ -24,10 +25,15 @@ namespace Inventory.Data
         public DbSet<ItemImage> ItemImages { get; set; } = null!;
         public DbSet<InventoryTransaction> InventoryTransactions { get; set; } = null!;
         public DbSet<UserOrganization> UserOrganizations { get; set; } = null!;
+        public DbSet<Consigner> Consigners { get; set; } = null!;
+        public DbSet<ConsignerPayout> ConsignerPayouts { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            // Apply entity configurations
+            builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
             // Global query filter for multi-tenancy
             foreach (var entityType in builder.Model.GetEntityTypes())
