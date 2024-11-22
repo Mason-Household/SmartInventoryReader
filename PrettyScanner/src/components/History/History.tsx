@@ -1,8 +1,8 @@
 import React from 'react';
-import { ScanResult } from '../Scanner/ScanResult';
+import { ScanRes } from '../Scanner/ScanResult';
 
 interface HistoryProps {
-	scanResults: ScanResult[];
+	scanResults: ScanRes[];
 }
 
 const History: React.FC<HistoryProps> = ({ scanResults }) => {

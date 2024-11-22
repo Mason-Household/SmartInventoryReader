@@ -45,7 +45,7 @@
     VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
     VITE_FIREBASE_APP_ID=your_app_id
     VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
-    VITE_API_URL=http://localhost:5000
+    VITE_API_URL=http://localhost:8080
     ```
 
 3. Build and Run with Docker 🐳

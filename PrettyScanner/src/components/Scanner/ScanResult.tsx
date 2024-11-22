@@ -1,8 +1,11 @@
-export interface ScanResult {
-  type: string;
-  name: string | null;
+import { ScanType } from "@/interfaces/ScanResult";
+
+export interface ScanRes {
+  type: ScanType;
+  name: string;
   suggested_price: number | null;
-  actual_price: number;
+  actual_price: number | null;
+  price: number;
   stock_quantity: number;
   low_stock_threshold: number | null;
   barcode: string | null;
@@ -20,11 +23,11 @@ export interface ScanResult {
   text_found: string[];
 }
 
-export const mapScanResultToInventoryItem = (result: ScanResult) => {
+export const mapScanResultToInventoryItem = (result: ScanRes) => {
   return {
     name: result.name || '',
     suggestedPrice: result.suggested_price,
-    actualPrice: result.actual_price,
+    actualPrice: result.price,
     stockQuantity: result.stock_quantity,
     lowStockThreshold: result.low_stock_threshold,
     barcode: result.barcode,

@@ -19,4 +19,58 @@ spec:
         - containerPort: 3000
         env:
         - name: VITE_API_URL
-          value: http://localhost:5000
+          value: "http://llm-service:8080"
+        - name: VITE_FIREBASE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: firebase-secrets
+              key: api-key
+        - name: VITE_FIREBASE_AUTH_DOMAIN
+          valueFrom:
+            secretKeyRef:
+              name: firebase-secrets
+              key: auth-domain
+        - name: VITE_FIREBASE_PROJECT_ID
+          valueFrom:
+            secretKeyRef:
+              name: firebase-secrets
+              key: project-id
+        - name: VITE_FIREBASE_STORAGE_BUCKET
+          valueFrom:
+            secretKeyRef:
+              name: firebase-secrets
+              key: storage-bucket
+        - name: VITE_FIREBASE_MESSAGING_SENDER_ID
+          valueFrom:
+            secretKeyRef:
+              name: firebase-secrets
+              key: messaging-sender-id
+        - name: VITE_FIREBASE_APP_ID
+          valueFrom:
+            secretKeyRef:
+              name: firebase-secrets
+              key: app-id
+        - name: VITE_FIREBASE_MEASUREMENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: firebase-secrets
+              key: measurement-id
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
