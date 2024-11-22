@@ -1,5 +1,7 @@
 import React from 'react';
 import { ScanRes } from '../Scanner/ScanResult';
+import { Box, List, ListItem, Typography } from '@mui/material';
+import { Heading } from 'lucide-react';
 
 interface HistoryProps {
 	scanResults: ScanRes[];
@@ -7,18 +9,18 @@ interface HistoryProps {
 
 const History: React.FC<HistoryProps> = ({ scanResults }) => {
 	return (
-		<div>
-			<h2>Scan History</h2>
-			<ul>
+		<Box>
+			<Heading>Scan History</Heading>
+			<List>
 				{scanResults.map((result, index) => (
-					<li key={index}>
-						<p>Type: {result.type}</p>
-						<p>Price: {result.suggested_price}</p>
-						<p>Text: {result.text_found}</p>
-					</li>
+					<ListItem key={index}>
+						<Typography>Type: {result.type}</Typography>
+						<Typography>Price: {result.suggested_price}</Typography>
+						<Typography>Text: {result.text_found}</Typography>
+					</ListItem>
 				))}
-			</ul>
-		</div>
+			</List>
+		</Box>
 	);
 };
 

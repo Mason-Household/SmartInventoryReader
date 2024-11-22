@@ -57,10 +57,7 @@ const Scanner: React.FC = () => {
         headers: {
           'Accept': 'application/json',
         },
-        // Include credentials if your backend requires authentication
-        credentials: 'include',
       });
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new Error(
@@ -68,12 +65,10 @@ const Scanner: React.FC = () => {
           `Server error: ${response.status} ${response.statusText}`
         );
       }
-
       const data = await response.json();
       if (!data) {
         throw new Error('Invalid response from server');
       }
-
       setResult(data);
       setShowSnackbar(true);
       setSnackbarMessage('Image processed successfully!');
