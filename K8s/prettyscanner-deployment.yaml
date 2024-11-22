@@ -18,8 +18,8 @@ spec:
         ports:
         - containerPort: 3000
         env:
-        - name: VITE_API_URL
-          value: "http://llm-service:8080"
+        - name: VITE_LLM_SERVICE_URL
+          value: "http://llm-service:8000"
         - name: VITE_FIREBASE_API_KEY
           valueFrom:
             secretKeyRef:

@@ -28,7 +28,7 @@ const Scanner: React.FC = () => {
   const webcamRef = useRef<Webcam | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+  const LLM_SERVICE_URL = import.meta.env.VITE_LLM_SERVICE_URL || 'http://localhost:8000';
 
   const handleError = (error: Error | string) => {
     const errorMessage = error instanceof Error ? error.message : error;
@@ -51,7 +51,7 @@ const Scanner: React.FC = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch(`${BASE_URL}/analyze`, {
+      const response = await fetch(`${LLM_SERVICE_URL}/analyze`, {
         method: 'POST',
         body: formData,
         headers: {

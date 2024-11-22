@@ -58,7 +58,7 @@
 
 - Backend API: <http://localhost:5000>
 - Frontend: <http://localhost:3000>
-- LLM Service: <http://localhost:8080>
+- LLM Service: <http://localhost:8000>
 
 ---------------------------------------------
 ---------------------------------------------
