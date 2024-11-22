@@ -1,19 +1,17 @@
+using MediatR;
 using Serilog;
 using Inventory.Data;
 using FluentValidation;
+using System.Reflection;
 using Inventory.Properties;
 using System.Security.Claims;
 using Inventory.Repositories;
-using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authentication.BearerToken;
-using System.Reflection;
-using MediatR;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Inventory.Extensions;
 
@@ -35,7 +33,7 @@ public static class BuilderExtensions
         builder.Services.AddControllers();
         builder.Services.AddFluentValidationAutoValidation()
             .AddFluentValidationClientsideAdapters()
-            .AddValidatorsFromAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+            .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddHealthChecks();
         builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -90,7 +88,7 @@ public static class BuilderExtensions
                         var claims = new List<Claim>
                         {
                             new(ClaimTypes.Name, ConfigurationConstants.JwtConfig.Claims.UserId),
-                            new(ClaimTypes.Role, ConfigurationConstants.JwtConfig.Claims.Role)
+                            new(ClaimTypes.Role, ConfigurationConstants.JwtConfig.Claims.Role),
                         };
                         var identity = new ClaimsIdentity(claims, ConfigurationConstants.AuthenticationScheme);
                         context.Principal = new ClaimsPrincipal(identity);
@@ -155,7 +153,7 @@ public static class BuilderExtensions
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-        app.UseHttpsRedirection();
+        // app.UseHttpsRedirection();
         app.UseAuthentication();
         app.UseAuthorization();
     }

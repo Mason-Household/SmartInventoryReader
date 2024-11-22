@@ -32,10 +32,16 @@ public class UpsertConsignerCommand : IRequest<Consigner>
 
 public class UpsertConsignerCommandHandler(AppDbContext _context) : IRequestHandler<UpsertConsignerCommand, Consigner>
 {
-    public async Task<Consigner> Handle(UpsertConsignerCommand request, CancellationToken cancellationToken = default) => 
+    public async Task<Consigner> Handle(
+        UpsertConsignerCommand request, 
+        CancellationToken cancellationToken = default
+    ) => 
         await UpsertConsigner(request, cancellationToken);
 
-    private async Task<Consigner> UpsertConsigner(UpsertConsignerCommand request, CancellationToken cancellationToken)
+    private async Task<Consigner> UpsertConsigner(
+        UpsertConsignerCommand request, 
+        CancellationToken cancellationToken
+    )
     {
         Consigner? toReturn = null;
         if (request.Id == 0)

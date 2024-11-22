@@ -1,9 +1,9 @@
-using Inventory.Commands;
+using MediatR;
 using Inventory.Models;
 using Inventory.Queries;
-using MediatR;
-using Microsoft.AspNetCore.Authorization;
+using Inventory.Commands;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Inventory.Controllers;
 
@@ -20,7 +20,7 @@ public class ConsignersController(IMediator _mediator) : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Consigner>> GetConsigner(long id)
+    public async Task<ActionResult<Consigner>> GetConsigner([FromQuery] long id)
     {
         var consigner = await _mediator.Send(new GetConsignersQuery { Id = id });
 
@@ -30,29 +30,19 @@ public class ConsignersController(IMediator _mediator) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Consigner>> CreateConsigner([FromBody] CreateConsignerCommand consigner)
+    public async Task<ActionResult<Consigner>> CreateConsigner([FromBody] UpsertConsignerCommand request)
     {
-        if (consigner.Id != 0)
-        {
-            return BadRequest("ID must not be specified when creating a new consigner");
-        }
-
-        var result = await _mediator.Send(consigner);
+        var result = await _mediator.Send(request);
         return CreatedAtAction(nameof(GetConsigner), new { id = result.Id }, result);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<Consigner>> UpdateConsigner(long id, Consigner consigner)
+    public async Task<ActionResult<Consigner>> UpdateConsigner([FromQuery] long id, UpsertConsignerCommand request)
     {
-        if (id != consigner.Id)
-        {
-            return BadRequest("ID mismatch");
-        }
-
         try
         {
-            var result = await _mediator.Send(consigner);
-            return Ok(result);
+            request.Id = id;
+            return Ok(await _mediator.Send(request));
         }
         catch (KeyNotFoundException)
         {
@@ -60,36 +50,20 @@ public class ConsignersController(IMediator _mediator) : ControllerBase
         }
     }
 
-    [HttpGet("{id}/unpaid-balance")]
-    public async Task<ActionResult<decimal>> GetUnpaidBalance(long id)
+    [HttpGet($"{{id}}/unpaid-balance")]
+    public async Task<ActionResult<decimal>> GetUnpaidBalance([FromQuery] long id)
     {
-        try
-        {
-            var balance = await _mediator.Send(new GetUnpaidBalanceQuery { ConsignerId = id });
-            return Ok(balance);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+        var balance = await _mediator.Send(new GetUnpaidBalanceQuery { ConsignerId = id });
+        return Ok(balance);
     }
 
-    [HttpPost("{id}/payouts")]
-    public async Task<ActionResult<ConsignerPayout>> RecordPayout(long id, ConsignerPayout payout)
+    [HttpPost($"{{id}}/payouts")]
+    public async Task<ActionResult<ConsignerPayout>> RecordPayout(
+        [FromQuery] long id, 
+        [FromBody] RecordConsignerPayoutCommand request
+    )
     {
-        if (id != payout.ConsignerId)
-        {
-            return BadRequest("ID mismatch");
-        }
-
-        try
-        {
-            var result = await _mediator.Send(payout);
-            return Ok(result);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+        request.ConsignerId = id;
+        return Ok(await _mediator.Send(request));
     }
 }

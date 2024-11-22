@@ -1,40 +1,45 @@
+using MediatR;
 using Inventory.Data;
+using FluentValidation;
 using Inventory.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Inventory.Commands;
 
-public class LoadConsignerHaulCommand
+public class LoadConsignerHaulCommandValidator : AbstractValidator<LoadConsignerHaulCommand>
 {
-    private readonly AppDbContext _context;
-
-    public LoadConsignerHaulCommand(AppDbContext context)
+    public LoadConsignerHaulCommandValidator()
     {
-        _context = context;
+        RuleFor(x => x.Items).NotEmpty();
+        RuleFor(x => x.ConsignerId).GreaterThan(0);
     }
+}
 
-    public async Task<IEnumerable<Item>> ExecuteAsync(long consignerId, IEnumerable<Item> items)
+public class LoadConsignerHaulCommand : IRequest<IEnumerable<Item>>
+{
+    public long ConsignerId { get; set; }
+    public IEnumerable<Item> Items { get; set; } = [];
+}
+
+public class LoadConsignerHaulCommandHandler(AppDbContext _context) : IRequestHandler<LoadConsignerHaulCommand, IEnumerable<Item>>
+{
+    public async Task<IEnumerable<Item>> Handle(LoadConsignerHaulCommand request, CancellationToken cancellationToken)
     {
         var consigner = await _context.Consigners
-            .FirstOrDefaultAsync(c => c.Id == consignerId);
-
-        if (consigner == null)
+            .FirstOrDefaultAsync(c => c.Id == request.ConsignerId, cancellationToken) ?? 
+            throw new KeyNotFoundException($"Consigner with ID {request.ConsignerId} not found");
+        foreach (var item in request.Items)
         {
-            throw new KeyNotFoundException($"Consigner with ID {consignerId} not found");
-        }
-
-        foreach (var item in items)
-        {
-            item.ConsignerId = consignerId;
-            item.SuggestedPrice = item.ActualPrice; // Store the original price as suggested
+            item.ConsignerId = request.ConsignerId;
             _context.Items.Add(item);
         }
 
         // Update consigner's unpaid balance based on their commission rate
-        decimal totalValue = items.Sum(i => i.ActualPrice);
+        decimal totalValue = request.Items.Sum(i => i.ActualPrice);
         consigner.UnpaidBalance += totalValue * consigner.CommissionRate;
 
-        await _context.SaveChangesAsync();
-        return items;
+        var saveResult = await _context.SaveChangesAsync(cancellationToken);
+        if (saveResult <= 0) throw new InvalidOperationException("Failed to save consigner haul");
+        return request.Items;
     }
 }

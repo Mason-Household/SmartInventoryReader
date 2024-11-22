@@ -1,68 +1,62 @@
+using MediatR;
 using Inventory.Data;
+using FluentValidation;
 using Inventory.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Inventory.Commands;
 
-public class RecordConsignerPayoutCommand
+public class RecordConsignerPayoutCommandValidator : AbstractValidator<RecordConsignerPayoutCommand>
 {
-    private readonly AppDbContext _context;
-
-    public RecordConsignerPayoutCommand(AppDbContext context)
+    public RecordConsignerPayoutCommandValidator()
     {
-        _context = context;
+        RuleFor(x => x.ConsignerId).GreaterThan(0);
+        RuleFor(x => x.Amount).GreaterThan(0);
+        RuleFor(x => x.PaymentMethod).NotEmpty();
     }
+}
 
-    public async Task<ConsignerPayout> ExecuteAsync(ConsignerPayout payout)
+public class RecordConsignerPayoutCommand : IRequest<Models.ConsignerPayout>
+{
+    public long ConsignerId { get; set; }
+    public decimal Amount { get; set; }
+    public DateTime PayoutDate { get; set; }
+    public string PaymentMethod { get; set; } = string.Empty;
+}
+
+public class RecordConsignerPayoutCommandHandler(AppDbContext _context) : IRequestHandler<RecordConsignerPayoutCommand, Models.ConsignerPayout>
+{
+    public async Task<Models.ConsignerPayout> Handle(
+        RecordConsignerPayoutCommand request, 
+        CancellationToken cancellationToken
+    )
     {
         var consigner = await _context.Consigners
-            .FirstOrDefaultAsync(c => c.Id == payout.ConsignerId);
-
-        if (consigner == null)
-        {
-            throw new KeyNotFoundException($"Consigner with ID {payout.ConsignerId} not found");
-        }
+            .FirstOrDefaultAsync(c => c.Id == request.ConsignerId, cancellationToken) ?? 
+            throw new KeyNotFoundException($"Consigner with ID {request.ConsignerId} not found");
 
         // Update consigner's payout totals
-        consigner.UnpaidBalance -= payout.Amount;
-        consigner.TotalPaidOut += payout.Amount;
+        consigner.UnpaidBalance -= request.Amount;
+        consigner.TotalPaidOut += request.Amount;
 
         // Set payout date if not specified
-        if (payout.PayoutDate == default)
+        if (request.PayoutDate == default)
         {
-            payout.PayoutDate = DateTime.UtcNow;
+            request.PayoutDate = DateTime.UtcNow;
         }
+
+        var payout = new Models.ConsignerPayout
+        {
+            ConsignerId = request.ConsignerId,
+            Amount = request.Amount,
+            PayoutDate = request.PayoutDate,
+            PaymentMethod = request.PaymentMethod
+        };
 
         _context.ConsignerPayouts.Add(payout);
-        await _context.SaveChangesAsync();
+        var saveResult = await _context.SaveChangesAsync(cancellationToken);
+        if (saveResult <= 0) throw new InvalidOperationException("Failed to save consigner payout");
 
         return payout;
-    }
-
-    public async Task<decimal> CalculateUnpaidBalanceAsync(long consignerId)
-    {
-        var consigner = await _context.Consigners
-            .Include(c => c.Items)
-            .FirstOrDefaultAsync(c => c.Id == consignerId);
-
-        if (consigner == null)
-        {
-            throw new KeyNotFoundException($"Consigner with ID {consignerId} not found");
-        }
-
-        // Calculate total sales value
-        decimal totalSales = await _context.Items
-            .Where(i => i.ConsignerId == consignerId)
-            .SumAsync(i => i.ActualPrice);
-
-        // Calculate consigner's share based on commission rate
-        decimal consignerShare = totalSales * consigner.CommissionRate;
-
-        // Subtract already paid amount
-        decimal alreadyPaid = await _context.ConsignerPayouts
-            .Where(p => p.ConsignerId == consignerId)
-            .SumAsync(p => p.Amount);
-
-        return consignerShare - alreadyPaid;
     }
 }

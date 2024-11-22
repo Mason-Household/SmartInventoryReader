@@ -1,5 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using Inventory.Extensions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Inventory;
 
@@ -16,7 +16,7 @@ public static class Program
         builder.ConfigureSwagger();
         builder.ConfigureDatabase();
         builder.ConfigureMediatR();
-        
+
         var app = builder.Build();
 
         app.ConfigureMiddleware();

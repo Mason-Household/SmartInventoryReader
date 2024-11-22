@@ -11,7 +11,7 @@ namespace Inventory.Tests.Commands;
 public class RecordConsignerPayoutCommandTests
 {
     private readonly AppDbContext _context;
-    private readonly RecordConsignerPayoutCommand _command;
+    private readonly Inventory.Commands.RecordConsignerPayoutCommand _command;
     private readonly ICurrentUserService _currentUserService;
 
     public RecordConsignerPayoutCommandTests()
@@ -21,7 +21,7 @@ public class RecordConsignerPayoutCommandTests
             .UseInMemoryDatabase(databaseName: $"TestDb_{Guid.NewGuid()}")
             .Options;
         _context = new AppDbContext(options, _currentUserService);
-        _command = new RecordConsignerPayoutCommand(_context);
+        _command = new Inventory.Commands.RecordConsignerPayoutCommand(_context);
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class RecordConsignerPayoutCommandTests
         await _context.Consigners.AddAsync(consigner);
         await _context.SaveChangesAsync();
 
-        var payout = new ConsignerPayout
+        var payout = new Inventory.Models.ConsignerPayout
         {
             ConsignerId = consigner.Id,
             Amount = 300m,
@@ -66,7 +66,7 @@ public class RecordConsignerPayoutCommandTests
     public async Task ExecuteAsync_WithNonExistentConsigner_ShouldThrowKeyNotFoundException()
     {
         // Arrange
-        var payout = new ConsignerPayout
+        var payout = new Inventory.Models.ConsignerPayout
         {
             ConsignerId = 999,
             Amount = 100m
@@ -86,7 +86,7 @@ public class RecordConsignerPayoutCommandTests
         await _context.SaveChangesAsync();
 
         var specificDate = new DateTime(2024, 1, 1);
-        var payout = new ConsignerPayout
+        var payout = new Inventory.Models.ConsignerPayout
         {
             ConsignerId = consigner.Id,
             Amount = 100m,
@@ -119,7 +119,7 @@ public class RecordConsignerPayoutCommandTests
         };
         await _context.Items.AddRangeAsync(items);
 
-        var existingPayout = new ConsignerPayout
+        var existingPayout = new Inventory.Models.ConsignerPayout
         {
             ConsignerId = consigner.Id,
             Amount = 50m
@@ -157,7 +157,7 @@ public class RecordConsignerPayoutCommandTests
         };
         await _context.Consigners.AddAsync(consigner);
 
-        var existingPayout = new ConsignerPayout
+        var existingPayout = new Inventory.Models.ConsignerPayout
         {
             ConsignerId = consigner.Id,
             Amount = 50m
