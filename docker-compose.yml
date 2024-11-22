@@ -62,7 +62,7 @@ services:
     depends_on:
       - inventory
     env_file:
-      - ./PrettyScanner/.env
+      - .env
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
       interval: 1m30s
