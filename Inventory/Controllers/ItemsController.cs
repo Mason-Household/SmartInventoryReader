@@ -3,6 +3,7 @@ using Inventory.Queries;
 using Inventory.Commands;
 using Inventory.Properties;
 using Microsoft.AspNetCore.Mvc;
+using Inventory.Commands.Items;
 
 namespace Inventory.Controllers;
 

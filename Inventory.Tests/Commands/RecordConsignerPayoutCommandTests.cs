@@ -1,17 +1,17 @@
-using Inventory.Commands;
 using Inventory.Data;
 using Inventory.Models;
 using Inventory.Services;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 using FluentAssertions;
+using Inventory.Commands.Consigners;
 
 namespace Inventory.Tests.Commands;
 
 public class RecordConsignerPayoutCommandTests
 {
     private readonly AppDbContext _context;
-    private readonly Inventory.Commands.RecordConsignerPayoutCommand _command;
+    private readonly RecordConsignerPayoutCommand _command;
     private readonly ICurrentUserService _currentUserService;
 
     public RecordConsignerPayoutCommandTests()

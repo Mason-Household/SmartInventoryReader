@@ -1,9 +1,9 @@
 using MediatR;
 using Inventory.Models;
 using Inventory.Queries;
-using Inventory.Commands;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Inventory.Commands.Consigners;
 
 namespace Inventory.Controllers;
 

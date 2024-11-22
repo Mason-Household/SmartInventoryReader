@@ -3,7 +3,7 @@ using FluentValidation;
 using Inventory.Models;
 using Inventory.Repositories;
 
-namespace Inventory.Commands;
+namespace Inventory.Commands.Items;
 
 public class DeleteItemCommandValidator : AbstractValidator<DeleteItemCommand>
 {
@@ -42,6 +42,6 @@ public class DeleteItemCommandHandler(
             _logger.LogError(ex, "Error deleting item with ID {Id}", request.Id);
             return false;
         }
-            
+
     }
 }

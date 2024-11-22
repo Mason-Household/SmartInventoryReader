@@ -4,7 +4,7 @@ using Inventory.Models;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
-namespace Inventory.Commands;
+namespace Inventory.Commands.Consigners;
 
 public class UpsertConsignerCommandValidator : AbstractValidator<UpsertConsignerCommand>
 {
@@ -33,13 +33,13 @@ public class UpsertConsignerCommand : IRequest<Consigner>
 public class UpsertConsignerCommandHandler(AppDbContext _context) : IRequestHandler<UpsertConsignerCommand, Consigner>
 {
     public async Task<Consigner> Handle(
-        UpsertConsignerCommand request, 
+        UpsertConsignerCommand request,
         CancellationToken cancellationToken = default
-    ) => 
+    ) =>
         await UpsertConsigner(request, cancellationToken);
 
     private async Task<Consigner> UpsertConsigner(
-        UpsertConsignerCommand request, 
+        UpsertConsignerCommand request,
         CancellationToken cancellationToken
     )
     {
@@ -61,7 +61,7 @@ public class UpsertConsignerCommandHandler(AppDbContext _context) : IRequestHand
         else
         {
             toReturn = await _context.Consigners
-                .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken) ?? 
+                .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken) ??
                 throw new KeyNotFoundException($"Consigner with ID {request.Id} not found");
 
             toReturn.Name = request.Name;

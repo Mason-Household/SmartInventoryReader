@@ -1,10 +1,10 @@
-using Inventory.Commands;
 using Inventory.Data;
 using Inventory.Models;
 using Inventory.Services;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 using FluentAssertions;
+using Inventory.Commands.Consigners;
 
 namespace Inventory.Tests.Commands;
 

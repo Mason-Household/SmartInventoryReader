@@ -1,5 +1,5 @@
 using FluentValidation.TestHelper;
-using Inventory.Commands;
+using Inventory.Commands.Items;
 using Inventory.Models;
 using Inventory.Repositories;
 using Microsoft.Extensions.Logging;

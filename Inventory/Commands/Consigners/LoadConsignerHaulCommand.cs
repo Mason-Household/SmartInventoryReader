@@ -4,7 +4,7 @@ using FluentValidation;
 using Inventory.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Inventory.Commands;
+namespace Inventory.Commands.Consigners;
 
 public class LoadConsignerHaulCommandValidator : AbstractValidator<LoadConsignerHaulCommand>
 {
@@ -26,7 +26,7 @@ public class LoadConsignerHaulCommandHandler(AppDbContext _context) : IRequestHa
     public async Task<IEnumerable<Item>> Handle(LoadConsignerHaulCommand request, CancellationToken cancellationToken)
     {
         var consigner = await _context.Consigners
-            .FirstOrDefaultAsync(c => c.Id == request.ConsignerId, cancellationToken) ?? 
+            .FirstOrDefaultAsync(c => c.Id == request.ConsignerId, cancellationToken) ??
             throw new KeyNotFoundException($"Consigner with ID {request.ConsignerId} not found");
         foreach (var item in request.Items)
         {

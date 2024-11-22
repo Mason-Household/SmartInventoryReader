@@ -4,7 +4,7 @@ using FluentValidation;
 using Inventory.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Inventory.Commands;
+namespace Inventory.Commands.Consigners;
 
 public class RecordConsignerPayoutCommandValidator : AbstractValidator<RecordConsignerPayoutCommand>
 {
@@ -16,7 +16,7 @@ public class RecordConsignerPayoutCommandValidator : AbstractValidator<RecordCon
     }
 }
 
-public class RecordConsignerPayoutCommand : IRequest<Models.ConsignerPayout>
+public class RecordConsignerPayoutCommand : IRequest<ConsignerPayout>
 {
     public long ConsignerId { get; set; }
     public decimal Amount { get; set; }
@@ -24,15 +24,15 @@ public class RecordConsignerPayoutCommand : IRequest<Models.ConsignerPayout>
     public string PaymentMethod { get; set; } = string.Empty;
 }
 
-public class RecordConsignerPayoutCommandHandler(AppDbContext _context) : IRequestHandler<RecordConsignerPayoutCommand, Models.ConsignerPayout>
+public class RecordConsignerPayoutCommandHandler(AppDbContext _context) : IRequestHandler<RecordConsignerPayoutCommand, ConsignerPayout>
 {
-    public async Task<Models.ConsignerPayout> Handle(
-        RecordConsignerPayoutCommand request, 
+    public async Task<ConsignerPayout> Handle(
+        RecordConsignerPayoutCommand request,
         CancellationToken cancellationToken
     )
     {
         var consigner = await _context.Consigners
-            .FirstOrDefaultAsync(c => c.Id == request.ConsignerId, cancellationToken) ?? 
+            .FirstOrDefaultAsync(c => c.Id == request.ConsignerId, cancellationToken) ??
             throw new KeyNotFoundException($"Consigner with ID {request.ConsignerId} not found");
 
         // Update consigner's payout totals
@@ -45,7 +45,7 @@ public class RecordConsignerPayoutCommandHandler(AppDbContext _context) : IReque
             request.PayoutDate = DateTime.UtcNow;
         }
 
-        var payout = new Models.ConsignerPayout
+        var payout = new ConsignerPayout
         {
             ConsignerId = request.ConsignerId,
             Amount = request.Amount,
