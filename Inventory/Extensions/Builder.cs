@@ -30,6 +30,16 @@ public static class BuilderExtensions
 
     public static void ConfigureServices(this WebApplicationBuilder builder)
     {
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.AllowAnyOrigin()
+                      .AllowAnyHeader()
+                      .AllowAnyMethod();
+            });
+        });
+
         builder.Services.AddControllers();
         builder.Services.AddFluentValidationAutoValidation()
             .AddFluentValidationClientsideAdapters()
@@ -41,7 +51,7 @@ public static class BuilderExtensions
         // Add API Versioning
         builder.Services.AddApiVersioning(options =>
         {
-            options.DefaultApiVersion = new ApiVersion(1, 0);
+            options.DefaultApiVersion = new ApiVersion(Convert.ToInt32(ConfigurationConstants.ApiVersion), 0);
             options.AssumeDefaultVersionWhenUnspecified = true;
             options.ReportApiVersions = true;
         });
@@ -153,6 +163,8 @@ public static class BuilderExtensions
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+        
+        app.UseCors();
         // app.UseHttpsRedirection();
         app.UseAuthentication();
         app.UseAuthorization();
