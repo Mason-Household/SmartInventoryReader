@@ -1,6 +1,5 @@
 using MediatR;
 using Inventory.Queries;
-using Inventory.Commands;
 using Inventory.Properties;
 using Microsoft.AspNetCore.Mvc;
 using Inventory.Commands.Items;
@@ -14,6 +13,10 @@ public class ItemsController(IMediator _mediator) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> SaveItem([FromBody] SaveItemCommand command) 
+        => Ok(await _mediator.Send(command));
+
+    [HttpPut]
+    public async Task<IActionResult> UpsertItem([FromBody] UpsertItemCommand command) 
         => Ok(await _mediator.Send(command));
 
     [HttpGet]

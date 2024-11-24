@@ -2,8 +2,8 @@ using MediatR;
 using Inventory.Models;
 using Inventory.Queries;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using Inventory.Commands.Consigners;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Inventory.Controllers;
 
@@ -19,7 +19,7 @@ public class ConsignersController(IMediator _mediator) : ControllerBase
         return Ok(consigners);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet($"{{id}}")]
     public async Task<ActionResult<Consigner>> GetConsigner([FromQuery] long id)
     {
         var consigner = await _mediator.Send(new GetConsignersQuery { Id = id });
@@ -29,25 +29,18 @@ public class ConsignersController(IMediator _mediator) : ControllerBase
         return Ok(consigner);
     }
 
-    [HttpPost]
-    public async Task<ActionResult<Consigner>> CreateConsigner([FromBody] UpsertConsignerCommand request)
+    [HttpPut]
+    public async Task<ActionResult<Consigner>> UpsertConsigner([FromBody] UpsertConsignerCommand request)
     {
         var result = await _mediator.Send(request);
         return CreatedAtAction(nameof(GetConsigner), new { id = result.Id }, result);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut($"{{id}}")]
     public async Task<ActionResult<Consigner>> UpdateConsigner([FromQuery] long id, UpsertConsignerCommand request)
     {
-        try
-        {
-            request.Id = id;
-            return Ok(await _mediator.Send(request));
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+        request.Id = id;
+        return Ok(await _mediator.Send(request));
     }
 
     [HttpGet($"{{id}}/unpaid-balance")]

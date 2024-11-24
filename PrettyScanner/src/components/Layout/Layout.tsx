@@ -22,12 +22,14 @@ import {
   History,
   LogOut,
   Github as GitHubIcon,
+  Users,
 } from 'lucide-react';
 import ErrorBoundary from '../Errors/ErrorBoundary';
 import HelpOutline from '../HelpOutline/HelpOutline';
 import { motion, AnimatePresence } from 'framer-motion';
 import ThemeSelector from '../ThemeSelector/ThemeSelector';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -35,6 +37,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const { logout, organization } = useAuth();
@@ -44,6 +47,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const menuItems = [
     { icon: <Home color={iconColor} />, text: 'Home', path: '/' },
     { icon: <History color={iconColor} />, text: 'Scan History', path: '/history' },
+    { icon: <Users color={iconColor} />, text: 'Consigners', path: '/consigners' },
     { icon: <Box color={iconColor}><HelpOutline /></Box>, text: 'Help', path: '/help' },
   ];
 
@@ -53,6 +57,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const handleDrawerClose = () => {
     setDrawerOpen(false);
+  };
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    handleDrawerClose();
   };
 
   return (
@@ -136,6 +145,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
+                    onClick={() => handleNavigation(item.path)}
                   >
                     {item.icon}
                   </IconButton>
@@ -202,7 +212,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: index * 0.1 }}
-              onClick={handleDrawerClose}
+              onClick={() => handleNavigation(item.path)}
               button
             >
               <ListItemIcon>{item.icon}</ListItemIcon>
