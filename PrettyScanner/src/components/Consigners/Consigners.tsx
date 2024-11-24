@@ -20,7 +20,7 @@ import {
   Switch,
   FormControlLabel,
 } from '@mui/material';
-import { Edit, DollarSign, Trash2 } from 'lucide-react';
+import { Edit, DollarSign } from 'lucide-react';
 import { Consigner, UpsertConsignerRequest, RecordPayoutRequest } from '../../interfaces/Consigner';
 
 const Consigners: React.FC = () => {

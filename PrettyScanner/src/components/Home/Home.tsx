@@ -1,4 +1,3 @@
-// src/components/Home.tsx
 import React from 'react';
 import {
   Card,
@@ -21,8 +20,8 @@ import {
   QrCode,
   Image as ImageIcon,
   TrendingUp,
+  BarChart as BarcodeIcon,
 } from 'lucide-react';
-import BarcodeIcon from 'feather-icons/dist/icons/barcode.svg';
 import { useNavigate } from 'react-router-dom';
 
 const MotionCard = motion(React.forwardRef<HTMLDivElement, any>((props, ref) => <Card {...props} ref={ref} component="div" />));

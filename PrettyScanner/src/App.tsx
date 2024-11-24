@@ -1,6 +1,5 @@
 import { CssBaseline } from '@mui/material';
 import { SnackbarProvider } from 'notistack';
-import { AnimatePresence } from 'framer-motion';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './theme/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
