@@ -9,7 +9,7 @@ import {
   User,
   AuthError,
 } from 'firebase/auth';
-import { auth } from '../../config/firebase';
+import { auth } from '../../config/firebase-config';
 import { Organization } from '../interfaces/Organization';
 
 interface AuthContextType {
