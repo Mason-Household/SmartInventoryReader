@@ -14,9 +14,6 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Preload the LLM
-RUN python -c "from transformers import pipeline; pipeline('text-generation', model='gpt-2')"
-
 EXPOSE 8000
 
 COPY . .
