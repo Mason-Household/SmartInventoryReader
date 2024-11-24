@@ -7,8 +7,8 @@ using Inventory.Commands.Items;
 namespace Inventory.Controllers;
 
 [ApiController]
-[Route(ConfigurationConstants.ItemsRoute)]
 [ApiVersion(ConfigurationConstants.ApiVersion)]
+[Route(ConfigurationConstants.InventoryApiRoute)]
 public class ItemsController(IMediator _mediator) : ControllerBase
 {
     [HttpPost]

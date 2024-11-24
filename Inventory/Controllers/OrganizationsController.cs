@@ -1,14 +1,14 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using Inventory.Queries;
+using Inventory.Properties;
+using Microsoft.AspNetCore.Mvc;
 using Inventory.Commands.Organizations;
 
 namespace Inventory.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
-[Authorize]
+[ApiVersion(ConfigurationConstants.ApiVersion)]
+[Route(ConfigurationConstants.InventoryApiRoute)]
 public class OrganizationsController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
