@@ -16,7 +16,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -126,7 +126,7 @@ class PriceRecognitionSystem:
 
     def suggest_stock_quantity(self, category_id):
         # Suggest initial stock based on category
-        base_quantity = 10
+        base_quantity = 5
         if category_id in [4, 5]:  # Food and beverages
             base_quantity = 20
         elif category_id in [1, 2]:  # Shoes and clothing
