@@ -27,13 +27,13 @@ public class DeleteItemCommandHandler(
     {
         try
         {
-            var item = await _itemRepository.GetByIdAsync(request.Id);
+            var item = await _itemRepository.GetByIdAsync(request.Id, cancellationToken);
 
             if (item == null) return false;
 
             item.IsDeleted = true;
 
-            await _itemRepository.UpdateAsync(item);
+            await _itemRepository.UpdateAsync(item, cancellationToken);
             _logger.LogInformation("Item with ID {Id} soft deleted", request.Id);
             return true;
         }

@@ -1,9 +1,8 @@
 using MediatR;
+using Inventory.Data;
 using FluentValidation;
 using Inventory.Models;
 using Inventory.Services;
-using Inventory.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace Inventory.Commands.Organizations;
 
