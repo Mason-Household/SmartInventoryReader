@@ -2,7 +2,7 @@ namespace Inventory.Models;
 
 public class UserOrganization
 {
-    public long UserId { get; set; }
+    public Guid UserId { get; set; }
     public long OrganizationId { get; set; }
     public string Role { get; set; } = null!; // Admin, Member, etc.
     public DateTime JoinedAt { get; set; }

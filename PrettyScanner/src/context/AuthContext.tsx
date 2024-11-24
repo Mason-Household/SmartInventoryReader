@@ -26,7 +26,8 @@ interface AuthContextType {
   isLoading: boolean;
 }
 
-const API_URL = import.meta.env.VITE_LLM_SERVICE_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const LLM_API_URL = import.meta.env.VITE_LLM_SERVICE_URL || 'http://localhost:8000';
 const HF_API_URL = 'https://huggingface.co/api';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -78,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadOrganizations = async (user: User) => {
     try {
       const token = await user.getIdToken();
-      const response = await fetch(`${API_URL}/api/organizations`, {
+      const response = await fetch(`${API_URL}/api/organizations?page=1&pageSize=100`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
