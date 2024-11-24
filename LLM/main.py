@@ -6,7 +6,6 @@ import easyocr
 import numpy as np
 from PIL import Image
 from pyzbar.pyzbar import decode
-from transformers import pipeline
 from dataclasses import dataclass
 from typing import Optional, List, Dict
 from torchvision.models import resnet50
@@ -43,16 +42,34 @@ class ScanResult:
 class ImageProcessor:
     def __init__(self):
         self.ocr_reader = easyocr.Reader(['en'])
-        self.image_classifier = pipeline('image-classification', model='resnet50')
         self.transform = transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
-        self.model = resnet50(pretrained=True)
+        self.model = resnet50(weights='IMAGENET1K_V1')
         self.model.eval()
         self.price_pattern = re.compile(r'\$\d+(\.\d{2})?')
         self.stock_thresholds = {1: 5, 2: 5, 4: 20, 5: 20}
+        # Load ImageNet class labels
+        self.imagenet_labels = self.load_imagenet_labels()
+
+    def load_imagenet_labels(self):
+        # Simple mapping of common ImageNet labels to our categories
+        common_labels = {
+            'running_shoe': 'shoe',
+            'athletic_shoe': 'shoe',
+            'shoe': 'shoe',
+            'jersey': 'clothing',
+            'shirt': 'clothing',
+            'tshirt': 'clothing',
+            'water_bottle': 'beverage',
+            'coffee_mug': 'beverage',
+            'pizza': 'food',
+            'hamburger': 'food',
+            'sandwich': 'food'
+        }
+        return common_labels
 
     def preprocess_image(self, file_contents: bytes) -> np.ndarray:
         image = np.array(Image.open(io.BytesIO(file_contents)))
@@ -85,18 +102,18 @@ class ImageProcessor:
             base_quantity = 5
         return base_quantity
 
-    def detect_category(self, predictions: List[Dict[str, str]]) -> int:
-        # Implement this function to map predictions to category IDs
-        # For simplicity, let's assume the first prediction is the category
+    def detect_category(self, class_idx: int, confidence: float) -> int:
+        # Map ImageNet class to our category system
+        class_name = self.imagenet_labels.get(str(class_idx), '').lower()
         category_map = {
             'shoe': 1,
             'clothing': 2,
             'food': 4,
             'beverage': 5
         }
-        for pred in predictions:
-            if pred['label'].lower() in category_map:
-                return category_map[pred['label'].lower()]
+        for label, category in category_map.items():
+            if label in class_name:
+                return category
         return 0  # Default category ID if no match found
 
     async def process_image(self, file_contents: bytes) -> ScanResult:
@@ -133,20 +150,19 @@ class ImageProcessor:
         # Extract prices from all text sources
         prices = self.extract_price_from_text(texts)
         
-        # 4. Guess details about shoes or clothing apparel
-        if not barcode_value and not qr_result:
-            pil_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-            input_tensor = self.transform(pil_image).unsqueeze(0)
-            with torch.no_grad():
-                output = self.model(input_tensor)
-            _, predicted = torch.max(output, 1)
-            category_id = predicted.item()
-            category_name = self.get_category_name(category_id)  # Implement this function to map category_id to category_name
-            texts.append(category_name)
+        # 4. Process image with ResNet50
+        pil_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        input_tensor = self.transform(pil_image).unsqueeze(0)
+        with torch.no_grad():
+            output = self.model(input_tensor)
+            probabilities = torch.nn.functional.softmax(output[0], dim=0)
+            confidence, class_idx = torch.max(probabilities, dim=0)
+            confidence = confidence.item()
+            class_idx = class_idx.item()
         
-        # Get image classification for category detection
-        predictions = self.image_classifier(Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)))
-        category_id = self.detect_category(predictions)
+        category_id = self.detect_category(class_idx, confidence)
+        category_name = self.get_category_name(category_id)
+        texts.append(category_name)
         
         # Extract or generate other required fields
         product_name = self.extract_product_name(texts)
@@ -155,10 +171,8 @@ class ImageProcessor:
         stock_quantity = self.suggest_stock_quantity(category_id)
         low_stock_threshold = self.stock_thresholds.get(category_id)
         
-        # Extract potential tags from text and predictions
-        tag_names = set()
-        for pred in predictions[:2]:  # Use top 2 predictions as tags
-            tag_names.add(pred['label'].lower())
+        # Use top predictions as tags
+        tag_names = set([category_name])
         
         return ScanResult(
             type=scan_type,
@@ -173,7 +187,7 @@ class ImageProcessor:
             notes=None,
             confidence=confidence,
             additional_info={
-                'predictions': predictions,
+                'predictions': class_idx,
                 'ocr_found_price': bool(prices)
             },
             text_found=texts
