@@ -56,7 +56,7 @@
 
 4. Access the Services 🌐
 
-- Backend API: <http://localhost:5000>
+- Backend API: <http://localhost:8080>
 - Frontend: <http://localhost:3000>
 - LLM Service: <http://localhost:8000>
 

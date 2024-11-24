@@ -12,7 +12,8 @@ using Microsoft.OpenApi.Models;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Inventory.Extensions;
 
@@ -35,9 +36,10 @@ public static class BuilderExtensions
         {
             options.AddDefaultPolicy(policy =>
             {
-                policy.AllowAnyOrigin()
+                policy.WithOrigins("http://localhost:5173") // Vite's default dev server port
                       .AllowAnyHeader()
-                      .AllowAnyMethod();
+                      .AllowAnyMethod()
+                      .AllowCredentials();
             });
         });
 
@@ -92,23 +94,17 @@ public static class BuilderExtensions
 
     public static void ConfigureAuthentication(this WebApplicationBuilder builder)
     {
-        builder.Services.AddAuthentication(ConfigurationConstants.AuthenticationScheme)
-            .AddBearerToken(options =>
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
             {
-                options.Events = new BearerTokenEvents
+                options.Authority = "https://securetoken.google.com/" + builder.Configuration["Firebase:ProjectId"];
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    OnMessageReceived = context =>
-                    {
-                        var claims = new List<Claim>
-                        {
-                            new(ClaimTypes.Name, ConfigurationConstants.JwtConfig.Claims.UserId),
-                            new(ClaimTypes.Role, ConfigurationConstants.JwtConfig.Claims.Role),
-                        };
-                        var identity = new ClaimsIdentity(claims, ConfigurationConstants.AuthenticationScheme);
-                        context.Principal = new ClaimsPrincipal(identity);
-                        context.Success();
-                        return Task.CompletedTask;
-                    }
+                    ValidateIssuer = true,
+                    ValidIssuer = "https://securetoken.google.com/" + builder.Configuration["Firebase:ProjectId"],
+                    ValidateAudience = true,
+                    ValidAudience = builder.Configuration["Firebase:ProjectId"],
+                    ValidateLifetime = true
                 };
             });
     }
@@ -125,13 +121,14 @@ public static class BuilderExtensions
                 }
             );
 
-            c.AddSecurityDefinition(ConfigurationConstants.AuthenticationScheme, new OpenApiSecurityScheme
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                Description = ConfigurationConstants.JwtConfig.Description,
-                Name = ConfigurationConstants.JwtConfig.SecurityScheme,
+                Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                Name = "Authorization",
                 In = ParameterLocation.Header,
                 Type = SecuritySchemeType.Http,
-                Scheme = ConfigurationConstants.AuthenticationScheme.ToLower(),
+                Scheme = "bearer",
+                BearerFormat = "JWT"
             });
 
             c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -142,7 +139,7 @@ public static class BuilderExtensions
                         Reference = new OpenApiReference
                         {
                             Type = ReferenceType.SecurityScheme,
-                            Id = ConfigurationConstants.AuthenticationScheme
+                            Id = "Bearer"
                         }
                     },
                     Array.Empty<string>()
@@ -168,8 +165,8 @@ public static class BuilderExtensions
             app.UseSwaggerUI();
         }
         
+        app.UseHttpsRedirection();
         app.UseCors();
-        // app.UseHttpsRedirection();
         app.UseAuthentication();
         app.UseAuthorization();
     }

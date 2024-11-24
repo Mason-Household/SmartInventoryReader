@@ -1,4 +1,5 @@
 using Inventory.Extensions;
+using Inventory.Properties;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Inventory;
@@ -22,6 +23,6 @@ public static class Program
         app.ConfigureMiddleware();
         app.ConfigureEndpoints();
 
-        app.Run();
+        app.Run(ConfigurationConstants.ApplicationURL);
     }
 }
