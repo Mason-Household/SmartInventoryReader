@@ -3,6 +3,7 @@ using Serilog;
 using Inventory.Data;
 using FluentValidation;
 using System.Reflection;
+using Inventory.Services;
 using Inventory.Properties;
 using System.Security.Claims;
 using Inventory.Repositories;
@@ -12,7 +13,6 @@ using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authentication.BearerToken;
-using Inventory.Services;
 
 namespace Inventory.Extensions;
 
