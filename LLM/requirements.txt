@@ -1,5 +1,13 @@
 torch
 transformers
+sentence-transformers
+torchvision
+torchtext
+torchsummary
+torchmetrics
+torchio
+torchdiffeq
+torch-geometric
 fastapi
 uvicorn
 python-multipart

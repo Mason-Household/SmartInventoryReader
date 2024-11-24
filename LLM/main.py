@@ -9,6 +9,8 @@ from pyzbar.pyzbar import decode
 from transformers import pipeline
 from dataclasses import dataclass
 from typing import Optional, List, Dict
+from torchvision.models import resnet50
+import torchvision.transforms as transforms
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -35,103 +37,67 @@ class ScanResult:
     tag_names: List[str]
     notes: Optional[str]
     confidence: float
-    additional_info: Dict
+    additional_info: Dict[str, Optional[bool]]
     text_found: List[str]
 
-class PriceRecognitionSystem:
+class ImageProcessor:
     def __init__(self):
-        # Initialize various models and readers
-        self.barcode_reader = cv2.barcode.BarcodeDetector()
         self.ocr_reader = easyocr.Reader(['en'])
-        
-        # Initialize vision transformer for product recognition
-        self.image_classifier = pipeline(
-            "image-classification",
-            model="microsoft/dit-base-finetuned-rvlcdip",
-            device=0 if torch.cuda.is_available() else -1
-        )
-        
-        # Price extraction patterns
-        self.price_pattern = re.compile(r'\$?\d+\.?\d*')
-        
-        # Category mappings (simplified example)
-        self.category_mappings = {
-            "shoe": 1,
-            "sneaker": 1,
-            "clothing": 2,
-            "electronics": 3,
-            "food": 4,
-            "beverage": 5,
-            "other": 6
-        }
-        
-        # Default stock thresholds by category
-        self.stock_thresholds = {
-            1: 5,  # shoes
-            2: 10, # clothing
-            3: 3,  # electronics
-            4: 15, # food
-            5: 20, # beverage
-            6: 5   # other
-        }
+        self.image_classifier = pipeline('image-classification', model='resnet50')
+        self.transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+        self.model = resnet50(pretrained=True)
+        self.model.eval()
+        self.price_pattern = re.compile(r'\$\d+(\.\d{2})?')
+        self.stock_thresholds = {1: 5, 2: 5, 4: 20, 5: 20}
 
-    def preprocess_image(self, image_bytes):
-        # Convert bytes to numpy array for OpenCV processing
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        return image
+    def preprocess_image(self, file_contents: bytes) -> np.ndarray:
+        image = np.array(Image.open(io.BytesIO(file_contents)))
+        return cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
-    def detect_and_decode_barcode(self, image):
-        # Try to detect and decode barcodes
-        retval, decoded_info, decoded_type, points = self.barcode_reader.detectAndDecode(image)
-        
-        if retval:
-            return {
-                'decoded_info': decoded_info,
-                'type': decoded_type,
-                'points': points
-            }
-        return None
-
-    def decode_qr_code(self, image):
-        # Use pyzbar to decode QR codes
+    def detect_and_decode_barcode(self, image: np.ndarray) -> Optional[Dict[str, List[str]]]:
         decoded_objects = decode(image)
         if decoded_objects:
-            return [{
-                'type': obj.type,
-                'data': obj.data.decode('utf-8'),
-                'rect': obj.rect
-            } for obj in decoded_objects]
+            return {'decoded_info': [obj.data.decode('utf-8') for obj in decoded_objects]}
         return None
 
-    def extract_price_from_text(self, texts):
-        prices = []
-        for text in texts:
-            matches = self.price_pattern.findall(text)
-            prices.extend([float(price.replace('$', '')) for price in matches])
-        return prices if prices else None
+    def decode_qr_code(self, image: np.ndarray) -> Optional[List[Dict[str, str]]]:
+        decoded_objects = decode(image)
+        if decoded_objects:
+            return [{'data': obj.data.decode('utf-8')} for obj in decoded_objects if obj.type == 'QRCODE']
+        return None
 
-    def detect_category(self, predictions):
-        for pred in predictions:
-            label = pred['label'].lower()
-            for category_name in self.category_mappings:
-                if category_name in label:
-                    return self.category_mappings[category_name]
-        return self.category_mappings['other']
+    def extract_price_from_text(self, texts: List[str]) -> List[float]:
+        return [float(price[1:]) for text in texts for price in self.price_pattern.findall(text)]
 
-    def extract_product_name(self, texts):
-        # Simple heuristic: take the longest text that's not a price
+    def extract_product_name(self, texts: List[str]) -> Optional[str]:
         valid_texts = [text for text in texts if not self.price_pattern.match(text)]
         return max(valid_texts, key=len, default=None) if valid_texts else None
 
-    def suggest_stock_quantity(self, category_id):
-        # Suggest initial stock based on category
-        base_quantity = 5
+    def suggest_stock_quantity(self, category_id: int) -> int:
+        base_quantity = 10
         if category_id in [4, 5]:  # Food and beverages
             base_quantity = 20
         elif category_id in [1, 2]:  # Shoes and clothing
             base_quantity = 5
         return base_quantity
+
+    def detect_category(self, predictions: List[Dict[str, str]]) -> int:
+        # Implement this function to map predictions to category IDs
+        # For simplicity, let's assume the first prediction is the category
+        category_map = {
+            'shoe': 1,
+            'clothing': 2,
+            'food': 4,
+            'beverage': 5
+        }
+        for pred in predictions:
+            if pred['label'].lower() in category_map:
+                return category_map[pred['label'].lower()]
+        return 0  # Default category ID if no match found
 
     async def process_image(self, file_contents: bytes) -> ScanResult:
         image = self.preprocess_image(file_contents)
@@ -166,6 +132,17 @@ class PriceRecognitionSystem:
         
         # Extract prices from all text sources
         prices = self.extract_price_from_text(texts)
+        
+        # 4. Guess details about shoes or clothing apparel
+        if not barcode_value and not qr_result:
+            pil_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+            input_tensor = self.transform(pil_image).unsqueeze(0)
+            with torch.no_grad():
+                output = self.model(input_tensor)
+            _, predicted = torch.max(output, 1)
+            category_id = predicted.item()
+            category_name = self.get_category_name(category_id)  # Implement this function to map category_id to category_name
+            texts.append(category_name)
         
         # Get image classification for category detection
         predictions = self.image_classifier(Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)))
@@ -202,13 +179,21 @@ class PriceRecognitionSystem:
             text_found=texts
         )
 
-# Initialize the system
-price_system = PriceRecognitionSystem()
+    def get_category_name(self, category_id: int) -> str:
+        category_map = {
+            1: 'shoe',
+            2: 'clothing',
+            4: 'food',
+            5: 'beverage'
+        }
+        return category_map.get(category_id, 'unknown')
 
-@app.post("/analyze")
+image_processor = ImageProcessor()
+
+@app.post("/analyze/")
 async def analyze_image(file: UploadFile = File(...)):
     contents = await file.read()
-    result = await price_system.process_image(contents)
+    result = await image_processor.process_image(contents)
     
     return {
         "type": result.type,
