@@ -41,8 +41,8 @@ public class GetOrganizationsQueryHandler(
         CancellationToken cancellationToken
     )
     {
-        var userId = _currentUserService.GetCurrentUserId() ?? 
-            throw new UnauthorizedAccessException("User not authenticated");
+        var userId = _currentUserService.GetCurrentUserId();
+        if (userId is null) return [];
 
         var query = _context.Organizations
             .Include(o => o.Users)

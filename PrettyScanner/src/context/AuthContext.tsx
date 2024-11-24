@@ -75,6 +75,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     throw new Error('An unexpected error occurred');
   };
 
+  const createDefaultOrganization = async (user: User) => {
+    const token = await user.getIdToken();
+    const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+    const orgName = `${displayName}'s Organization`;
+    
+    const response = await fetch(`${API_URL}/api/organizations`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ 
+        name: orgName,
+        slug: orgName.toLowerCase().replace(/\s+/g, '-'),
+        isActive: true,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create default organization');
+    }
+
+    return await response.json();
+  };
+
   const loadOrganizations = async (user: User) => {
     try {
       const token = await user.getIdToken();
@@ -86,10 +111,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to load organizations: ${response.statusText}`);
+        console.error('Failed to load organizations:', response.statusText);
+        return;
       }
 
-      const orgs: Organization[] = await response.json();
+      let orgs: Organization[] = await response.json();
+      
+      // If user has no organizations, create a default one
+      if (orgs.length === 0) {
+        const defaultOrg = await createDefaultOrganization(user);
+        orgs = [defaultOrg];
+      }
+
       setOrganizations(orgs);
       
       const savedOrgId = localStorage.getItem('currentOrganizationId');
@@ -97,15 +130,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const currentOrg = orgs.find(org => org.id === parseInt(savedOrgId));
         if (currentOrg) {
           setOrganization(currentOrg);
-        } else if (orgs.length > 0) {
+        } else {
           setCurrentOrganization(orgs[0]);
         }
-      } else if (orgs.length > 0) {
+      } else {
         setCurrentOrganization(orgs[0]);
       }
     } catch (error) {
       console.error('Failed to load organizations:', error);
-      throw new Error('Failed to load organizations. Please try again later.');
+      // Don't throw error, just log it and continue
     }
   };
 
@@ -157,7 +190,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (!orgResponse.ok) {
-        throw new Error('Failed to create organization');
+        console.error('Failed to create organization:', orgResponse.statusText);
+        // Continue with registration even if org creation fails
+        return;
       }
 
       const org: Organization = await orgResponse.json();
@@ -228,7 +263,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearLocalStorage();
     } catch (error) {
       console.error('Logout failed:', error);
-      throw new Error('Failed to logout. Please try again.');
+      // Don't throw error, just log it and continue
     }
   };
 
