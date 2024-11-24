@@ -12,6 +12,9 @@ public class CreateOrganizationCommandValidator : AbstractValidator<CreateOrgani
     {
         RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
         RuleFor(x => x.Slug).NotEmpty().MaximumLength(200);
+        RuleFor(x => x.Domain).NotEmpty().MaximumLength(200);
+        RuleFor(x => x.AllowedAuthProviders).NotEmpty();
+        RuleFor(x => x.AllowedEmailDomains).NotEmpty();
     }
 }
 
@@ -19,25 +22,39 @@ public class CreateOrganizationCommand : IRequest<Organization>
 {
     public string Name { get; set; } = null!;
     public string Slug { get; set; } = null!;
+    public string Domain { get; set; } = null!;
     public bool IsActive { get; set; } = true;
+    public string[] AllowedAuthProviders { get; set; } = [];
+    public string[] AllowedEmailDomains { get; set; } = [];
 }
 
-public class CreateOrganizationCommandHandler(
-    AppDbContext _context,
-    ICurrentUserService _currentUserService
-) : IRequestHandler<CreateOrganizationCommand, Organization>
+public class CreateOrganizationCommandHandler : IRequestHandler<CreateOrganizationCommand, Organization>
 {
+    private readonly AppDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IOrganizationService _organizationService;
+
+    public CreateOrganizationCommandHandler(
+        AppDbContext context,
+        ICurrentUserService currentUserService,
+        IOrganizationService organizationService)
+    {
+        _context = context;
+        _currentUserService = currentUserService;
+        _organizationService = organizationService;
+    }
+
     public async Task<Organization> Handle(
         CreateOrganizationCommand request,
-        CancellationToken cancellationToken
-    ) =>
-        await CreateOrganization(request, cancellationToken);
-
-    private async Task<Organization> CreateOrganization(
-        CreateOrganizationCommand request,
-        CancellationToken cancellationToken
-    )
+        CancellationToken cancellationToken)
     {
+        // Check if organization already exists for domain
+        var existingOrg = await _organizationService.GetOrganizationByDomainAsync(request.Domain);
+        if (existingOrg != null)
+        {
+            throw new InvalidOperationException($"Organization already exists for domain {request.Domain}");
+        }
+
         var userId = _currentUserService.GetCurrentUserId() ?? 
             throw new UnauthorizedAccessException("User not authenticated");
 
@@ -45,7 +62,10 @@ public class CreateOrganizationCommandHandler(
         {
             Name = request.Name,
             Slug = request.Slug,
-            IsActive = request.IsActive
+            Domain = request.Domain,
+            IsActive = request.IsActive,
+            AllowedAuthProviders = request.AllowedAuthProviders,
+            AllowedEmailDomains = request.AllowedEmailDomains
         };
 
         _context.Organizations.Add(organization);
@@ -56,7 +76,9 @@ public class CreateOrganizationCommandHandler(
             UserId = userId,
             OrganizationId = organization.Id,
             Role = "Owner",
-            JoinedAt = DateTime.UtcNow
+            JoinedAt = DateTime.UtcNow,
+            AuthProvider = "manual", // Since this is manual creation
+            ExternalUserId = null
         };
 
         _context.UserOrganizations.Add(userOrganization);

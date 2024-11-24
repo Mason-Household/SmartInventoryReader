@@ -42,11 +42,22 @@ namespace Inventory.Data
                 {
                     var parameter = Expression.Parameter(entityType.ClrType, "p");
                     var property = Expression.Property(parameter, nameof(TenantEntity.OrganizationId));
-                    var orgId = Expression.Constant(_currentOrganizationId);
-                    var body = Expression.Equal(property, orgId);
-                    var lambda = Expression.Lambda(body, parameter);
-
-                    builder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+                    
+                    // Handle the case where _currentOrganizationId is null
+                    if (_currentOrganizationId.HasValue)
+                    {
+                        var orgId = Expression.Constant(_currentOrganizationId.Value, typeof(long));
+                        var body = Expression.Equal(property, orgId);
+                        var lambda = Expression.Lambda(body, parameter);
+                        builder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+                    }
+                    else
+                    {
+                        // When no organization is set, return false (no records)
+                        var body = Expression.Constant(false);
+                        var lambda = Expression.Lambda(body, parameter);
+                        builder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+                    }
                 }
             }
         }

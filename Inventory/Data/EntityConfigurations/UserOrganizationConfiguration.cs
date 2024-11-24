@@ -27,5 +27,16 @@ public class UserOrganizationConfiguration : IEntityTypeConfiguration<UserOrgani
         builder.Property(uo => uo.JoinedAt)
             .IsRequired()
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        // New fields configuration
+        builder.Property(uo => uo.AuthProvider)
+            .IsRequired()
+            .HasMaxLength(50);
+
+        builder.Property(uo => uo.ExternalUserId)
+            .HasMaxLength(200);
+
+        // Add index for ExternalUserId for faster lookups
+        builder.HasIndex(uo => new { uo.AuthProvider, uo.ExternalUserId });
     }
 }

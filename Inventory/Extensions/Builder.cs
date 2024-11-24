@@ -12,6 +12,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authentication.BearerToken;
+using Inventory.Services;
 
 namespace Inventory.Extensions;
 
@@ -47,6 +48,9 @@ public static class BuilderExtensions
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddHealthChecks();
         builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        
+        // Add Organization Service
+        builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 
         // Add API Versioning
         builder.Services.AddApiVersioning(options =>
