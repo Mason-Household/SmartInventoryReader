@@ -35,7 +35,7 @@ public static class BuilderExtensions
         builder.Services.AddCors(options =>
         {
             options.AddDefaultPolicy(policy => policy
-                .AllowAnyOrigin()
+                .WithOrigins(ConfigurationConstants.SupportedOrigins)
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials()
@@ -161,12 +161,23 @@ public static class BuilderExtensions
 
     public static void ConfigureMiddleware(this WebApplication app)
     {
-        // if (app.Environment.IsDevelopment())
-        // {
+        if (app.Environment.IsDevelopment())
+        {
             app.UseSwagger();
             app.UseSwaggerUI();
-        // }
-        
+        }
+        app.Use(async (context, next) =>
+        {
+            var supportedUrls = ConfigurationConstants.SupportedOrigins;
+            if (supportedUrls.Contains(context.Request.Host.Value))
+            {
+                await next();
+            }
+            else
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            }
+        });
         app.UseHttpsRedirection();
         app.UseCors();
         app.UseAuthentication();

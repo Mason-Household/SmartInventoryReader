@@ -23,6 +23,6 @@ public static class Program
         app.ConfigureMiddleware();
         app.ConfigureEndpoints();
 
-        app.Run(ConfigurationConstants.ApplicationURL);
+        app.Run();
     }
 }
