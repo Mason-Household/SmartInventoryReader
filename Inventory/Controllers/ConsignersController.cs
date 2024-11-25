@@ -9,6 +9,8 @@ namespace Inventory.Controllers;
 public class ConsignersController(IMediator _mediator) : BaseSmartInventoryController(_mediator)
 {
     [HttpGet]
+    [Route(nameof(GetConsigners))]
+    [ProducesResponseType(typeof(IEnumerable<Consigner>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<Consigner>>> GetConsigners([FromQuery] bool includeInactive = false)
     {
         var consigners = await _mediator.Send(new GetConsignersQuery { IncludeInactive = includeInactive });
@@ -16,6 +18,8 @@ public class ConsignersController(IMediator _mediator) : BaseSmartInventoryContr
     }
 
     [HttpGet($"{{id}}")]
+    [Route(nameof(GetConsigner))]
+    [ProducesResponseType(typeof(Consigner), StatusCodes.Status200OK)]
     public async Task<ActionResult<Consigner>> GetConsigner([FromQuery] long id)
     {
         var consigner = await _mediator.Send(new GetConsignersQuery { Id = id });
@@ -26,6 +30,8 @@ public class ConsignersController(IMediator _mediator) : BaseSmartInventoryContr
     }
 
     [HttpPut]
+    [Route(nameof(UpsertConsigner))]
+    [ProducesResponseType(typeof(Consigner), StatusCodes.Status201Created)]
     public async Task<ActionResult<Consigner>> UpsertConsigner([FromBody] UpsertConsignerCommand request)
     {
         var result = await _mediator.Send(request);
@@ -33,6 +39,8 @@ public class ConsignersController(IMediator _mediator) : BaseSmartInventoryContr
     }
 
     [HttpPut($"{{id}}")]
+    [Route(nameof(UpdateConsigner))]
+    [ProducesResponseType(typeof(Consigner), StatusCodes.Status200OK)]
     public async Task<ActionResult<Consigner>> UpdateConsigner([FromQuery] long id, UpsertConsignerCommand request)
     {
         request.Id = id;
@@ -40,6 +48,8 @@ public class ConsignersController(IMediator _mediator) : BaseSmartInventoryContr
     }
 
     [HttpGet($"{{id}}/unpaid-balance")]
+    [Route(nameof(GetUnpaidBalance))]
+    [ProducesResponseType(typeof(decimal), StatusCodes.Status200OK)]
     public async Task<ActionResult<decimal>> GetUnpaidBalance([FromQuery] long id)
     {
         var balance = await _mediator.Send(new GetUnpaidBalanceQuery { ConsignerId = id });
@@ -47,6 +57,8 @@ public class ConsignersController(IMediator _mediator) : BaseSmartInventoryContr
     }
 
     [HttpPost($"{{id}}/payouts")]
+    [Route(nameof(RecordPayout))]
+    [ProducesResponseType(typeof(ConsignerPayout), StatusCodes.Status201Created)]
     public async Task<ActionResult<ConsignerPayout>> RecordPayout(
         [FromQuery] long id, 
         [FromBody] RecordConsignerPayoutCommand request
