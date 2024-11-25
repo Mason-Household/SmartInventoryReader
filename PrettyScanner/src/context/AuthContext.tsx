@@ -8,23 +8,11 @@ import {
   onAuthStateChanged,
   User,
   AuthError,
+  getAuth,
 } from 'firebase/auth';
 import { auth } from '../../config/firebase-config';
 import { Organization } from '../interfaces/Organization';
-
-interface AuthContextType {
-  user: User | null;
-  organization: Organization | null;
-  organizations: Organization[];
-  setCurrentOrganization: (org: Organization) => void;
-  loginWithGoogle: () => Promise<void>;
-  loginWithEmail: (email: string, password: string) => Promise<void>;
-  registerWithEmail: (email: string, password: string, organizationName: string) => Promise<void>;
-  loginWithHuggingFace: (token: string, org: Organization) => Promise<void>;
-  logout: () => Promise<void>;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-}
+import { AuthContextType } from '../interfaces/AuthContextType';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 const HF_API_URL = 'https://huggingface.co/api';
@@ -36,6 +24,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [tenantAuth, setTenantAuth] = useState<any>(auth);
+
+  const loadOrganizations = async (user: User) => {
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch(`${API_URL}/api/organizations`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load organizations');
+      }
+
+      const data = await response.json();
+      setOrganizations(data);
+    } catch (error) {
+      console.error('Error loading organizations:', error);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user: User | null) => {
@@ -54,6 +65,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => unsubscribe();
   }, []);
+
+  const initializeTenantAuth = async (tenantId: string) => {
+    const newAuth = getAuth();
+    await (newAuth as any).tenantId(tenantId);
+    setTenantAuth(newAuth);
+    return newAuth;
+  };
 
   const clearLocalStorage = () => {
     setOrganizations([]);
@@ -75,74 +93,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     throw new Error('An unexpected error occurred');
   };
 
-  const createDefaultOrganization = async (user: User) => {
-    const token = await user.getIdToken();
-    const displayName = user.displayName || user.email?.split('@')[0] || 'User';
-    const orgName = `${displayName}'s Organization`;
-    
-    const response = await fetch(`${API_URL}/api/organizations/getOrganizations`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ 
-        name: orgName,
-        slug: orgName.toLowerCase().replace(/\s+/g, '-'),
-        isActive: true,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to create default organization');
+  const setCurrentOrganization = async (org: Organization) => {
+    if (org.firebaseTenantId) {
+      await initializeTenantAuth(org.firebaseTenantId);
     }
-
-    return await response.json();
-  };
-
-  const loadOrganizations = async (user: User) => {
-    try {
-      const token = await user.getIdToken();
-      const response = await fetch(`${API_URL}/api/organizations/getOrganizations?page=1&pageSize=100`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        console.error('Failed to load organizations:', response.statusText);
-        return;
-      }
-
-      let orgs: Organization[] = await response.json();
-      
-      // If user has no organizations, create a default one
-      if (orgs.length === 0) {
-        const defaultOrg = await createDefaultOrganization(user);
-        orgs = [defaultOrg];
-      }
-
-      setOrganizations(orgs);
-      
-      const savedOrgId = localStorage.getItem('currentOrganizationId');
-      if (savedOrgId) {
-        const currentOrg = orgs.find(org => org.id === parseInt(savedOrgId));
-        if (currentOrg) {
-          setOrganization(currentOrg);
-        } else {
-          setCurrentOrganization(orgs[0]);
-        }
-      } else {
-        setCurrentOrganization(orgs[0]);
-      }
-    } catch (error) {
-      console.error('Failed to load organizations:', error);
-      // Don't throw error, just log it and continue
-    }
-  };
-
-  const setCurrentOrganization = (org: Organization) => {
     setOrganization(org);
     if (org.id !== null && org.id !== undefined) {
       localStorage.setItem('currentOrganizationId', org.id.toString());
@@ -152,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGoogle = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(tenantAuth, provider);
       setUser(result.user);
       await loadOrganizations(result.user);
     } catch (error) {
@@ -162,7 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginWithEmail = async (email: string, password: string) => {
     try {
-      const result = await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(tenantAuth, email, password);
       setUser(result.user);
       await loadOrganizations(result.user);
     } catch (error) {

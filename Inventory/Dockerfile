@@ -20,5 +20,8 @@ ENV JWT_ISSUER=$JWT_ISSUER
 ENV JWT_AUDIENCE=$JWT_AUDIENCE
 ENV JWT_EXPIRATION_IN_MINUTES=$JWT_EXPIRATION
 
+COPY firebaseKey.json /app/firebaseKey.json
+ENV GOOGLE_APPLICATION_CREDENTIALS=/app/firebaseKey.json
+
 # Run the application
 ENTRYPOINT ["dotnet", "Inventory.dll"]

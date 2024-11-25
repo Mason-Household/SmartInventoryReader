@@ -1,19 +1,19 @@
 using MediatR;
 using Serilog;
+using FirebaseAdmin;
 using Inventory.Data;
 using FluentValidation;
 using System.Reflection;
 using Inventory.Services;
 using Inventory.Properties;
-using System.Security.Claims;
 using Inventory.Repositories;
-using Microsoft.AspNetCore.Mvc;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.OpenApi.Models;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Inventory.Extensions;
 
@@ -41,7 +41,10 @@ public static class BuilderExtensions
                 .AllowCredentials()
             );
         });
-
+        builder.Services.AddSingleton(FirebaseApp.Create(new AppOptions
+        {
+            Credential = GoogleCredential.GetApplicationDefault()
+        })); 
         builder.Services.AddControllers();
         builder.Services.AddFluentValidationAutoValidation()
             .AddFluentValidationClientsideAdapters()
