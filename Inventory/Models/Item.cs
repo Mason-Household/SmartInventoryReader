@@ -10,12 +10,15 @@ public class Item : AuditableEntity
     public int? LowStockThreshold { get; set; }
     public string? Barcode { get; set; }
     public long? CategoryId { get; set; }
+    public long? ConsignerId { get; set; }
     public string? PrimaryImageUrl { get; set; }
     public string? Notes { get; set; }
     public Category? Category { get; set; }
+    public Consigner? Consigner { get; set; }
     public Organization Organization { get; set; } = null!;
     public ICollection<PriceHistory> PriceHistory { get; set; } = [];
     public ICollection<Tag> Tags { get; set; } = [];
     public ICollection<ItemImage> Images { get; set; } = [];
     public ICollection<InventoryTransaction> Transactions { get; set; } = [];
+    public bool IsDeleted { get; set; } = false;
 }

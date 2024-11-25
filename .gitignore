@@ -399,4 +399,4 @@ FodyWeavers.xsd
 
 .env
 
-./PrettyScanner/src/config/firebase.ts
+firebaseKey.json

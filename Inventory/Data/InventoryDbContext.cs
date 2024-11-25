@@ -1,54 +1,61 @@
-using Inventory.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics.CodeAnalysis;
+using Inventory.Models;
 
-namespace Inventory.Data;
-
-[ExcludeFromCodeCoverage]
-public class InventoryDbContext(DbContextOptions<InventoryDbContext> options) : DbContext(options)
+namespace Inventory.Data
 {
-    public required DbSet<Item> Items { get; set; }
-    public required DbSet<Category> Categories { get; set; }
-    public required DbSet<PriceHistory> PriceHistory { get; set; }
-    public required DbSet<Tag> Tags { get; set; }
-    public required DbSet<ItemImage> ItemImages { get; set; }
-    public required DbSet<InventoryTransaction> InventoryTransactions { get; set; }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    public class InventoryDbContext(DbContextOptions<InventoryDbContext> options) : DbContext(options)
     {
-        base.OnModelCreating(modelBuilder);
 
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(InventoryDbContext).Assembly);
-    }
+        public required DbSet<Item> Items { get; set; }
+        public required DbSet<Category> Categories { get; set; }
+        public required DbSet<PriceHistory> PriceHistory { get; set; }
+        public required DbSet<Tag> Tags { get; set; }
+        public required DbSet<ItemImage> ItemImages { get; set; }
+        public required DbSet<InventoryTransaction> InventoryTransactions { get; set; }
+        public required DbSet<Organization> Organizations { get; set; }
+        public required DbSet<UserOrganization> UserOrganizations { get; set; }
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            switch (entry.State)
-            {
-                case EntityState.Added:
-                    entry.Entity.CreatedAt = DateTime.UtcNow;
-                    entry.Entity.UpdatedAt = DateTime.UtcNow;
-                    break;
-                case EntityState.Modified:
-                    entry.Entity.UpdatedAt = DateTime.UtcNow;
-                    break;
-            }
+            base.OnModelCreating(modelBuilder);
+
+            // Apply configurations
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(InventoryDbContext).Assembly);
+
+            // Seed data
+            modelBuilder.Entity<Organization>().HasData(
+                new Organization
+                {
+                    Id = 1,
+                    Name = "Default Organization",
+                    Slug = "default-organization",
+                    Domain = "default.com",
+                    IsActive = true,
+                    AllowedAuthProviders = new[] { "google", "email" },
+                    AllowedEmailDomains = new[] { "default.com" },
+                    FirebaseTenantId = "default-tenant-id"
+                }
+            );
         }
 
-        // Handle TenantEntity
-        foreach (var entry in ChangeTracker.Entries<TenantEntity>())
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            if (entry.State == EntityState.Added)
+            foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
             {
-                if (entry.Entity.OrganizationId == default)
+                switch (entry.State)
                 {
-                    throw new InvalidOperationException("OrganizationId must be set for tenant entities");
+                    case EntityState.Added:
+                        entry.Entity.CreatedAt = DateTime.UtcNow;
+                        entry.Entity.CreatedBy = "system"; // Replace with actual user
+                        break;
+                    case EntityState.Modified:
+                        entry.Entity.UpdatedAt = DateTime.UtcNow;
+                        entry.Entity.UpdatedBy = "system"; // Replace with actual user
+                        break;
                 }
             }
-        }
 
-        return base.SaveChangesAsync(cancellationToken);
+            return base.SaveChangesAsync(cancellationToken);
+        }
     }
 }

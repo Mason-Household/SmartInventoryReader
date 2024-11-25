@@ -15,9 +15,12 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICur
 
     public Guid? GetCurrentUserId()
     {
-        var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (Guid.TryParse(userId, out var result)) return result;
-        return null;
+        var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue("user_id") ?? 
+                    _httpContextAccessor.HttpContext?.User?.FindFirstValue("sub");
+        
+        if (string.IsNullOrEmpty(userId)) return null;
+        
+        return CreateDeterministicGuid(userId);
     }
 
     public long? GetCurrentOrganizationId()
@@ -29,6 +32,15 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICur
 
     public string? GetUserEmail()
     {
-        return _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Email);
+        return _httpContextAccessor.HttpContext?.User?.FindFirstValue("email") ??
+               _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Email);
+    }
+
+    private static Guid CreateDeterministicGuid(string input)
+    {
+        using var md5 = System.Security.Cryptography.MD5.Create();
+        var inputBytes = System.Text.Encoding.UTF8.GetBytes(input);
+        var hashBytes = md5.ComputeHash(inputBytes);
+        return new Guid(hashBytes);
     }
 }
