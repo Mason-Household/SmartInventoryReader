@@ -52,7 +52,7 @@ const Consigners: React.FC = () => {
 
   const fetchConsigners = async () => {
     try {
-      const response = await fetch('/api/consigners');
+      const response = await fetch('/api/v1/getConsigners');
       if (!response.ok) throw new Error('Failed to fetch consigners');
       const data = await response.json();
       setConsigners(data);
@@ -91,7 +91,7 @@ const Consigners: React.FC = () => {
 
   const handleSaveConsigner = async () => {
     try {
-      const response = await fetch('/api/consigners', {
+      const response = await fetch('/api/v1/getConsigners', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -107,7 +107,7 @@ const Consigners: React.FC = () => {
   const handleRecordPayout = async () => {
     if (!selectedConsigner) return;
     try {
-      const response = await fetch(`/api/consigners/${selectedConsigner.id}/payouts`, {
+      const response = await fetch(`/api/v1/getConsigners/${selectedConsigner.id}/payouts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payoutData),

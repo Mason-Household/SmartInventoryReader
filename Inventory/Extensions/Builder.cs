@@ -36,10 +36,13 @@ public static class BuilderExtensions
         {
             options.AddDefaultPolicy(policy =>
             {
-                policy.WithOrigins("http://localhost:5173") // Vite's default dev server port
-                      .AllowAnyHeader()
-                      .AllowAnyMethod()
-                      .AllowCredentials();
+                policy.WithOrigins(
+                    "http://localhost:5173", // Vite's default dev server port
+                    "http://localhost:3000"  // Docker container port
+                )
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
             });
         });
 
@@ -159,11 +162,11 @@ public static class BuilderExtensions
 
     public static void ConfigureMiddleware(this WebApplication app)
     {
-        if (app.Environment.IsDevelopment())
-        {
+        // if (app.Environment.IsDevelopment())
+        // {
             app.UseSwagger();
             app.UseSwaggerUI();
-        }
+        // }
         
         app.UseHttpsRedirection();
         app.UseCors();
