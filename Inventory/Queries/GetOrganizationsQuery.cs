@@ -42,7 +42,8 @@ public class GetOrganizationsQueryHandler(
     )
     {
         var userId = _currentUserService.GetCurrentUserId();
-        if (userId is null) return [];
+        if (userId is null)
+            throw new UnauthorizedAccessException("No valid user ID found in the current context");
 
         var query = _context.Organizations
             .Include(o => o.Users)

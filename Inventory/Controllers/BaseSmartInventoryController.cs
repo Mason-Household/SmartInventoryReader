@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Inventory.Controllers;
 
-[Authorize]
 [ApiController]
 [ExcludeFromCodeCoverage]
 [Route(ConfigurationConstants.InventoryApiRoute)]

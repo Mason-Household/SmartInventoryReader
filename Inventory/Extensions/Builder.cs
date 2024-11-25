@@ -8,6 +8,7 @@ using Inventory.Services;
 using FirebaseAdmin.Auth;
 using Inventory.Properties;
 using Inventory.Repositories;
+using Inventory.Middleware;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.OpenApi.Models;
 using FluentValidation.AspNetCore;
@@ -169,9 +170,14 @@ public static class BuilderExtensions
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+
+        // Add exception handling middleware first
+        app.UseMiddleware<ExceptionHandlingMiddleware>();
+        
         app.UseCors();
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseMiddleware<TenantMiddleware>();
     }
 
     public static void ConfigureEndpoints(this WebApplication app)
