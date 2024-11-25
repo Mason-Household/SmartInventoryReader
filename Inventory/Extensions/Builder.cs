@@ -166,19 +166,6 @@ public static class BuilderExtensions
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-        app.Use(async (context, next) =>
-        {
-            var supportedUrls = ConfigurationConstants.SupportedOrigins;
-            if (supportedUrls.Contains(context.Request.Host.Value))
-            {
-                await next();
-            }
-            else
-            {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            }
-        });
-        app.UseHttpsRedirection();
         app.UseCors();
         app.UseAuthentication();
         app.UseAuthorization();
