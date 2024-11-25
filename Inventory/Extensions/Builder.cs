@@ -5,6 +5,7 @@ using Inventory.Data;
 using FluentValidation;
 using System.Reflection;
 using Inventory.Services;
+using FirebaseAdmin.Auth;
 using Inventory.Properties;
 using Inventory.Repositories;
 using Google.Apis.Auth.OAuth2;
@@ -32,19 +33,21 @@ public static class BuilderExtensions
 
     public static void ConfigureServices(this WebApplicationBuilder builder)
     {
+        FirebaseApp.Create(new AppOptions()
+        {
+            Credential = GoogleCredential.FromFile("/app/firebaseKey.json")
+        });
         builder.Services.AddCors(options =>
         {
             options.AddDefaultPolicy(policy => policy
-                .WithOrigins(ConfigurationConstants.SupportedOrigins)
+                .WithOrigins("http://localhost:3000")
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials()
             );
         });
-        builder.Services.AddSingleton(FirebaseApp.Create(new AppOptions
-        {
-            Credential = GoogleCredential.GetApplicationDefault()
-        })); 
+        
+        builder.Services.AddSingleton(FirebaseAuth.DefaultInstance);
         builder.Services.AddControllers();
         builder.Services.AddFluentValidationAutoValidation()
             .AddFluentValidationClientsideAdapters()

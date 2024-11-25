@@ -8,12 +8,7 @@ namespace Inventory.Controllers;
 public class ItemsController(IMediator _mediator) : BaseSmartInventoryController(_mediator)
 {
     [HttpPost]
-    public async Task<IActionResult> SaveItem([FromBody] SaveItemCommand command) 
-        => Ok(await _mediator.Send(command));
-
-    [HttpPut]
-    public async Task<IActionResult> UpsertItem([FromBody] UpsertItemCommand command) 
-        => Ok(await _mediator.Send(command));
+    public async Task<IActionResult> SaveItem([FromBody] SaveItemCommand command) => Ok(await _mediator.Send(command));
 
     [HttpGet]
     public async Task<IActionResult> GetItems(
@@ -32,6 +27,9 @@ public class ItemsController(IMediator _mediator) : BaseSmartInventoryController
         };
         return Ok(await _mediator.Send(query));
     }
+
+    [HttpPut]
+    public async Task<IActionResult> UpsertItem([FromBody] UpsertItemCommand command) => Ok(await _mediator.Send(command));
 
     [HttpDelete]
     public async Task<IActionResult> DeleteItem([FromQuery] long id) => Ok(await _mediator.Send(new DeleteItemCommand(id)));

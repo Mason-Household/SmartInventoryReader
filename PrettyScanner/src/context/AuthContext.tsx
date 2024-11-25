@@ -29,11 +29,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadOrganizations = async (user: User) => {
     try {
       const token = await user.getIdToken();
-      const response = await fetch(`${API_URL}/api/organizations`, {
+      const response = await fetch(`${API_URL}/api/organizations/getOrganizations`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
+          'Access-Control-Allow-Origin': 'http://localhost:3000',
         },
       });
 

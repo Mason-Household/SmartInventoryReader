@@ -1,5 +1,4 @@
 using Inventory.Extensions;
-using Inventory.Properties;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Inventory;
