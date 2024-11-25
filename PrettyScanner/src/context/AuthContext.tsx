@@ -39,12 +39,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
       });
 
-      if (!response.ok) {
+      if (!response.data) {
         throw new Error('Failed to load organizations');
       }
 
-      const data = await response.json();
-      setOrganizations(data);
+      setOrganizations(response.data);
     } catch (error) {
       console.error('Error loading organizations:', error);
     }

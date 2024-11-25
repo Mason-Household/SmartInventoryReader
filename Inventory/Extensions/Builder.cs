@@ -161,6 +161,7 @@ public static class BuilderExtensions
                 builder.Configuration.GetConnectionString(ConfigurationConstants.DefaultConnection),
                 x => x.MigrationsAssembly(ConfigurationConstants.MigrationsAssembly)
             ));
+        builder.Services.AddScoped<AppDbContext>();
     }
 
     public static void ConfigureMiddleware(this WebApplication app)

@@ -2,7 +2,6 @@ using MediatR;
 using Inventory.Properties;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Inventory.Controllers;
 

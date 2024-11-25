@@ -2,7 +2,6 @@ using Inventory.Data;
 using Inventory.Models;
 using Inventory.Services;
 using Microsoft.EntityFrameworkCore;
-using Xunit;
 using FluentAssertions;
 using Inventory.Commands.Consigners;
 
@@ -11,8 +10,8 @@ namespace Inventory.Tests.Commands;
 public class LoadConsignerHaulCommandTests
 {
     private readonly AppDbContext _context;
-    private readonly LoadConsignerHaulCommand _command;
     private readonly ICurrentUserService _currentUserService;
+    private LoadConsignerHaulCommandHandler Sut => new(_context);
 
     public LoadConsignerHaulCommandTests()
     {
@@ -21,7 +20,6 @@ public class LoadConsignerHaulCommandTests
             .UseInMemoryDatabase(databaseName: $"TestDb_{Guid.NewGuid()}")
             .Options;
         _context = new AppDbContext(options, _currentUserService);
-        _command = new LoadConsignerHaulCommand(_context);
     }
 
     [Fact]
@@ -40,12 +38,12 @@ public class LoadConsignerHaulCommandTests
 
         var items = new List<Item>
         {
-            new Item { ActualPrice = 100m },
-            new Item { ActualPrice = 200m }
+            new() { ActualPrice = 100m },
+            new() { ActualPrice = 200m }
         };
 
         // Act
-        var result = await _command.ExecuteAsync(consigner.Id, items);
+        var result = await Sut.Handle(new LoadConsignerHaulCommand { ConsignerId = consigner.Id, Items = items }, default);
 
         // Assert
         result.Should().NotBeNull();
@@ -66,12 +64,12 @@ public class LoadConsignerHaulCommandTests
         // Arrange
         var items = new List<Item>
         {
-            new Item { ActualPrice = 100m }
+            new() { ActualPrice = 100m }
         };
 
         // Act & Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(() => 
-            _command.ExecuteAsync(999, items));
+            Sut.Handle(new LoadConsignerHaulCommand { ConsignerId = 999, Items = items }, default));
     }
 
     [Fact]
@@ -89,7 +87,7 @@ public class LoadConsignerHaulCommandTests
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _command.ExecuteAsync(consigner.Id, new List<Item>());
+        var result = await Sut.Handle(new LoadConsignerHaulCommand { ConsignerId = consigner.Id, Items = [] }, default);
 
         // Assert
         result.Should().NotBeNull();
@@ -114,12 +112,12 @@ public class LoadConsignerHaulCommandTests
 
         var items = new List<Item>
         {
-            new Item { ActualPrice = 100m, ConsignerId = null },
-            new Item { ActualPrice = 200m, ConsignerId = 999 } // Different consigner ID
+            new() { ActualPrice = 100m, ConsignerId = null },
+            new() { ActualPrice = 200m, ConsignerId = 999 } // Different consigner ID
         };
 
         // Act
-        await _command.ExecuteAsync(consigner.Id, items);
+        await Sut.Handle(new LoadConsignerHaulCommand { ConsignerId = consigner.Id, Items = items }, default);
 
         // Assert
         var loadedItems = await _context.Items.ToListAsync();
