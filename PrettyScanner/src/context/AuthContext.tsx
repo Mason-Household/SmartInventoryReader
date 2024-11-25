@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const displayName = user.displayName || user.email?.split('@')[0] || 'User';
     const orgName = `${displayName}'s Organization`;
     
-    const response = await fetch(`${API_URL}/api/v1/organizations/getOrganizations`, {
+    const response = await fetch(`${API_URL}/api/organizations/getOrganizations`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -103,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadOrganizations = async (user: User) => {
     try {
       const token = await user.getIdToken();
-      const response = await fetch(`${API_URL}/api/v1/organizations/getOrganizations?page=1&pageSize=100`, {
+      const response = await fetch(`${API_URL}/api/organizations/getOrganizations?page=1&pageSize=100`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -176,7 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(result.user);
 
       const token = await result.user.getIdToken();
-      const orgResponse = await fetch(`${API_URL}/api/v1/organizations/getOrganizations`, {
+      const orgResponse = await fetch(`${API_URL}/api/organizations/getOrganizations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
