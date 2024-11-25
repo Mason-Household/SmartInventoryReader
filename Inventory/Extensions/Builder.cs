@@ -34,16 +34,12 @@ public static class BuilderExtensions
     {
         builder.Services.AddCors(options =>
         {
-            options.AddDefaultPolicy(policy =>
-            {
-                policy.WithOrigins(
-                    "http://localhost:5173", // Vite's default dev server port
-                    ConfigurationConstants.ApplicationURL  // Docker container port
-                )
+            options.AddDefaultPolicy(policy => policy
+                .AllowAnyOrigin()
                 .AllowAnyHeader()
                 .AllowAnyMethod()
-                .AllowCredentials();
-            });
+                .AllowCredentials()
+            );
         });
 
         builder.Services.AddControllers();
