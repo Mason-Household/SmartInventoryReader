@@ -16,7 +16,7 @@ public class ConfigurationConstants
     public const string MongoDbSettings = "MongoDbSettings";
     public const string DefaultConnection = "DefaultConnection";
     public const string ApplicationURL = "http://0.0.0.0:8080";
-    public static readonly string[] SupportedOrigins = [ "localhost:3000" ];
+    public static readonly string[] SupportedOrigins = [ "http://localhost:3000" ];
     public const string InventoryApiRoute = "api/[controller]";
     public const string ConnectionStringKey = "MongoDbSettings:ConnectionString";
 
