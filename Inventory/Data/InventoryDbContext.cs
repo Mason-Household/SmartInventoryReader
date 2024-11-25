@@ -3,12 +3,8 @@ using Inventory.Models;
 
 namespace Inventory.Data
 {
-    public class InventoryDbContext : DbContext
+    public class InventoryDbContext(DbContextOptions<InventoryDbContext> options) : DbContext(options)
     {
-        public InventoryDbContext(DbContextOptions<InventoryDbContext> options)
-            : base(options)
-        {
-        }
 
         public required DbSet<Item> Items { get; set; }
         public required DbSet<Category> Categories { get; set; }
