@@ -1,15 +1,11 @@
 using MediatR;
 using Inventory.Queries;
-using Inventory.Properties;
 using Microsoft.AspNetCore.Mvc;
 using Inventory.Commands.Organizations;
 
 namespace Inventory.Controllers;
 
-[ApiController]
-[ApiVersion(ConfigurationConstants.ApiVersion)]
-[Route(ConfigurationConstants.InventoryApiRoute)]
-public class OrganizationsController(IMediator mediator) : ControllerBase
+public class OrganizationsController(IMediator _mediator) : BaseSmartInventoryController(_mediator)
 {
     [HttpGet]
     public async Task<IActionResult> GetOrganizations(
@@ -29,9 +25,7 @@ public class OrganizationsController(IMediator mediator) : ControllerBase
             SortBy = sortBy,
             SortAscending = sortAscending
         };
-
-        var result = await mediator.Send(query, cancellationToken);
-        return Ok(result);
+        return Ok(await _mediator.Send(query, cancellationToken));
     }
 
     [HttpPost]
@@ -40,7 +34,7 @@ public class OrganizationsController(IMediator mediator) : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        var result = await mediator.Send(command, cancellationToken);
+        var result = await _mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetOrganizations), new { id = result.Id }, result);
     }
 }

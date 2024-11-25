@@ -38,7 +38,7 @@ public static class BuilderExtensions
             {
                 policy.WithOrigins(
                     "http://localhost:5173", // Vite's default dev server port
-                    "http://localhost:3000"  // Docker container port
+                    ConfigurationConstants.ApplicationURL  // Docker container port
                 )
                 .AllowAnyHeader()
                 .AllowAnyMethod()
@@ -58,18 +58,18 @@ public static class BuilderExtensions
         builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 
         // Add API Versioning
-        builder.Services.AddApiVersioning(options =>
-        {
-            options.DefaultApiVersion = new ApiVersion(1, 0);
-            options.AssumeDefaultVersionWhenUnspecified = true;
-            options.ReportApiVersions = true;
-        });
+        // builder.Services.AddApiVersioning(options =>
+        // {
+        //     options.DefaultApiVersion = new ApiVersion(1, 0);
+        //     options.AssumeDefaultVersionWhenUnspecified = true;
+        //     options.ReportApiVersions = true;
+        // });
 
-        builder.Services.AddVersionedApiExplorer(options =>
-        {
-            options.GroupNameFormat = "'v'VVV";
-            options.SubstituteApiVersionInUrl = true;
-        });
+        // builder.Services.AddVersionedApiExplorer(options =>
+        // {
+        //     options.GroupNameFormat = "'v'VVV";
+        //     options.SubstituteApiVersionInUrl = true;
+        // });
     }
 
     public static void ConfigureMediatR(this WebApplicationBuilder builder)

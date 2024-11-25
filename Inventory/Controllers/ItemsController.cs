@@ -1,15 +1,11 @@
 using MediatR;
 using Inventory.Queries;
-using Inventory.Properties;
 using Microsoft.AspNetCore.Mvc;
 using Inventory.Commands.Items;
 
 namespace Inventory.Controllers;
 
-[ApiController]
-[ApiVersion(ConfigurationConstants.ApiVersion)]
-[Route(ConfigurationConstants.InventoryApiRoute)]
-public class ItemsController(IMediator _mediator) : ControllerBase
+public class ItemsController(IMediator _mediator) : BaseSmartInventoryController(_mediator)
 {
     [HttpPost]
     public async Task<IActionResult> SaveItem([FromBody] SaveItemCommand command) 

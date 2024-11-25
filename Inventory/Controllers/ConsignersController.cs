@@ -3,14 +3,10 @@ using Inventory.Models;
 using Inventory.Queries;
 using Microsoft.AspNetCore.Mvc;
 using Inventory.Commands.Consigners;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Inventory.Controllers;
 
-[Authorize]
-[ApiController]
-[Route("api/[controller]")]
-public class ConsignersController(IMediator _mediator) : ControllerBase
+public class ConsignersController(IMediator _mediator) : BaseSmartInventoryController(_mediator)
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Consigner>>> GetConsigners([FromQuery] bool includeInactive = false)
