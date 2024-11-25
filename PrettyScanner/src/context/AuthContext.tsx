@@ -11,6 +11,7 @@ import {
   getAuth,
 } from 'firebase/auth';
 import { auth } from '../../config/firebase-config';
+import axios from 'axios';
 import { Organization } from '../interfaces/Organization';
 import { AuthContextType } from '../interfaces/AuthContextType';
 
@@ -29,12 +30,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadOrganizations = async (user: User) => {
     try {
       const token = await user.getIdToken();
-      const response = await fetch(`${API_URL}/api/organizations/getOrganizations`, {
-        method: 'GET',
+      const response = await axios.get(`${API_URL}/api/organizations/getOrganizations`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
           'Access-Control-Allow-Origin': 'http://localhost:3000',
+          'Access-Control-Allow-Credentials': 'true',
         },
       });
 
@@ -131,11 +132,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(result.user);
 
       const token = await result.user.getIdToken();
-      const orgResponse = await fetch(`${API_URL}/api/organizations/getOrganizations`, {
-        method: 'POST',
+      const orgResponse = await axios.post(`${API_URL}/api/organizations/createOrganization`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
+          'Access-Control-Allow-Origin:': 'http://localhost:3000',
+          'Access-Control-Allow-Credentials': 'true',
         },
         body: JSON.stringify({ 
           name: organizationName,
@@ -144,13 +146,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }),
       });
 
-      if (!orgResponse.ok) {
+      if (!orgResponse.data || !orgResponse.data.id) {
         console.error('Failed to create organization:', orgResponse.statusText);
         // Continue with registration even if org creation fails
         return;
       }
 
-      const org: Organization = await orgResponse.json();
+      const org: Organization = await orgResponse.data;
       setOrganization(org);
       setOrganizations([org]);
       if (org.id !== null && org.id !== undefined) {
