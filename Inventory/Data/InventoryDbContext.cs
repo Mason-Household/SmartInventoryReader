@@ -5,6 +5,11 @@ namespace Inventory.Data
 {
     public class InventoryDbContext : DbContext
     {
+        public InventoryDbContext(DbContextOptions<InventoryDbContext> options)
+            : base(options)
+        {
+        }
+
         public required DbSet<Item> Items { get; set; }
         public required DbSet<Category> Categories { get; set; }
         public required DbSet<PriceHistory> PriceHistory { get; set; }
@@ -26,13 +31,13 @@ namespace Inventory.Data
                 new Organization
                 {
                     Id = 1,
-                    Name = "Five M",
-                    Slug = "five-m",
-                    Domain = "fivemconsulting.com",
+                    Name = "Default Organization",
+                    Slug = "default-organization",
+                    Domain = "default.com",
                     IsActive = true,
-                    AllowedAuthProviders = ["google", "email"],
-                    AllowedEmailDomains = ["fivemconsulting.com"],
-                    FirebaseTenantId = "C04kor7t1"
+                    AllowedAuthProviders = new[] { "google", "email" },
+                    AllowedEmailDomains = new[] { "default.com" },
+                    FirebaseTenantId = "default-tenant-id"
                 }
             );
         }
@@ -45,11 +50,11 @@ namespace Inventory.Data
                 {
                     case EntityState.Added:
                         entry.Entity.CreatedAt = DateTime.UtcNow;
-                        entry.Entity.CreatedBy = "system"; 
+                        entry.Entity.CreatedBy = "system"; // Replace with actual user
                         break;
                     case EntityState.Modified:
                         entry.Entity.UpdatedAt = DateTime.UtcNow;
-                        entry.Entity.UpdatedBy = "system"; 
+                        entry.Entity.UpdatedBy = "system"; // Replace with actual user
                         break;
                 }
             }
