@@ -1,5 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
 using Inventory.Extensions;
+using Inventory.Properties;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Inventory;
 
@@ -15,12 +16,13 @@ public static class Program
         builder.ConfigureAuthentication();
         builder.ConfigureSwagger();
         builder.ConfigureDatabase();
+        builder.ConfigureMediatR();
 
         var app = builder.Build();
 
         app.ConfigureMiddleware();
         app.ConfigureEndpoints();
 
-        app.Run();
+        app.Run(ConfigurationConstants.ApplicationURL);
     }
 }

@@ -7,8 +7,9 @@ import {
   signOut,
   onAuthStateChanged,
   User,
+  AuthError,
 } from 'firebase/auth';
-import { auth } from '../config/firebase';
+import { auth } from '../../config/firebase-config';
 import { Organization } from '../interfaces/Organization';
 
 interface AuthContextType {
@@ -22,7 +23,11 @@ interface AuthContextType {
   loginWithHuggingFace: (token: string, org: Organization) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
+  isLoading: boolean;
 }
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const HF_API_URL = 'https://huggingface.co/api';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -30,49 +35,110 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user: User | null) => {
       setUser(user);
       if (user) {
-        await loadOrganizations(user);
+        try {
+          await loadOrganizations(user);
+        } catch (error) {
+          console.error('Failed to load organizations:', error);
+        }
       } else {
-        setOrganizations([]);
-        setOrganization(null);
-        localStorage.removeItem('currentOrganizationId');
+        clearLocalStorage();
       }
+      setIsLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
+  const clearLocalStorage = () => {
+    setOrganizations([]);
+    setOrganization(null);
+    localStorage.removeItem('currentOrganizationId');
+    localStorage.removeItem('hf_token');
+  };
+
+  const handleAuthError = (error: unknown) => {
+    if (error instanceof Error) {
+      if ((error as AuthError).code === 'auth/network-request-failed') {
+        throw new Error('Network error. Please check your connection.');
+      }
+      if ((error as AuthError).code === 'auth/invalid-credential') {
+        throw new Error('Invalid credentials. Please check your email and password.');
+      }
+      throw error;
+    }
+    throw new Error('An unexpected error occurred');
+  };
+
+  const createDefaultOrganization = async (user: User) => {
+    const token = await user.getIdToken();
+    const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+    const orgName = `${displayName}'s Organization`;
+    
+    const response = await fetch(`${API_URL}/api/organizations/getOrganizations`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ 
+        name: orgName,
+        slug: orgName.toLowerCase().replace(/\s+/g, '-'),
+        isActive: true,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create default organization');
+    }
+
+    return await response.json();
+  };
+
   const loadOrganizations = async (user: User) => {
     try {
-      const response = await fetch('api/organizations', {
+      const token = await user.getIdToken();
+      const response = await fetch(`${API_URL}/api/organizations/getOrganizations?page=1&pageSize=100`, {
         headers: {
-          Authorization: `Bearer ${await user.getIdToken()}`
-        }
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
-      if (response.ok) {
-        const orgs: Organization[] = await response.json();
-        setOrganizations(orgs);
-        
-        // Load current organization from localStorage or use first available
-        const savedOrgId = localStorage.getItem('currentOrganizationId');
-        if (savedOrgId) {
-          const currentOrg = orgs.find(org => org.id === parseInt(savedOrgId));
-          if (currentOrg) {
-            setOrganization(currentOrg);
-          }
-        } else if (orgs.length > 0) {
-          setOrganization(orgs[0]);
-          if (orgs[0].id !== null && orgs[0].id !== undefined) {
-            localStorage.setItem('currentOrganizationId', orgs[0].id.toString());
-          }
+
+      if (!response.ok) {
+        console.error('Failed to load organizations:', response.statusText);
+        return;
+      }
+
+      let orgs: Organization[] = await response.json();
+      
+      // If user has no organizations, create a default one
+      if (orgs.length === 0) {
+        const defaultOrg = await createDefaultOrganization(user);
+        orgs = [defaultOrg];
+      }
+
+      setOrganizations(orgs);
+      
+      const savedOrgId = localStorage.getItem('currentOrganizationId');
+      if (savedOrgId) {
+        const currentOrg = orgs.find(org => org.id === parseInt(savedOrgId));
+        if (currentOrg) {
+          setOrganization(currentOrg);
+        } else {
+          setCurrentOrganization(orgs[0]);
         }
+      } else {
+        setCurrentOrganization(orgs[0]);
       }
     } catch (error) {
       console.error('Failed to load organizations:', error);
+      // Don't throw error, just log it and continue
     }
   };
 
@@ -90,8 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(result.user);
       await loadOrganizations(result.user);
     } catch (error) {
-      console.error('Google login failed:', error);
-      throw error;
+      handleAuthError(error);
     }
   };
 
@@ -101,8 +166,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(result.user);
       await loadOrganizations(result.user);
     } catch (error) {
-      console.error('Email login failed:', error);
-      throw error;
+      handleAuthError(error);
     }
   };
 
@@ -111,82 +175,95 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const result = await createUserWithEmailAndPassword(auth, email, password);
       setUser(result.user);
 
-      // Create organization
-      const orgResponse = await fetch('api/organizations', {
+      const token = await result.user.getIdToken();
+      const orgResponse = await fetch(`${API_URL}/api/organizations/getOrganizations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${await result.user.getIdToken()}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ name: organizationName })
+        body: JSON.stringify({ 
+          name: organizationName,
+          slug: organizationName.toLowerCase().replace(/\s+/g, '-'),
+          isActive: true,
+        }),
       });
 
-      if (orgResponse.ok) {
-        const org: Organization = await orgResponse.json();
-        setOrganization(org);
-        setOrganizations([org]);
-        if (org.id !== null && org.id !== undefined) {
-          localStorage.setItem('currentOrganizationId', org.id.toString());
-        }
-      } else {
-        throw new Error('Failed to create organization');
+      if (!orgResponse.ok) {
+        console.error('Failed to create organization:', orgResponse.statusText);
+        // Continue with registration even if org creation fails
+        return;
+      }
+
+      const org: Organization = await orgResponse.json();
+      setOrganization(org);
+      setOrganizations([org]);
+      if (org.id !== null && org.id !== undefined) {
+        localStorage.setItem('currentOrganizationId', org.id.toString());
       }
     } catch (error) {
-      console.error('Email registration failed:', error);
-      throw error;
+      handleAuthError(error);
     }
   };
 
   const loginWithHuggingFace = async (token: string, org: Organization) => {
     try {
-      // Validate token by making a request to HuggingFace
-      const response = await fetch('https://huggingface.co/api/whoami', {
+      const response = await fetch(`${HF_API_URL}/whoami`, {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
       
       if (!response.ok) {
-        throw new Error('Invalid token');
+        throw new Error('Invalid HuggingFace token');
       }
 
-      // Store the token and organization
+      const hfUserData = await response.json();
+      
+      // Validate the response
+      if (!hfUserData.id || !hfUserData.email) {
+        throw new Error('Invalid response from HuggingFace API');
+      }
+
+      // Store token securely
       localStorage.setItem('hf_token', token);
+      
+      // Set organization
       setOrganization(org);
       setOrganizations([org]);
-      if (org.id !== null && org.id !== undefined
-          && org.id !== organization?.id) {
+      if (org.id !== null && org.id !== undefined) {
         localStorage.setItem('currentOrganizationId', org.id.toString());
       }
 
-      // Create a custom user object since we're not using Firebase auth for HuggingFace
-      const hfUserData = await response.json();
+      // Create custom user object
       const customUser = {
         uid: `hf_${hfUserData.id}`,
         email: hfUserData.email,
-        displayName: hfUserData.name,
+        displayName: hfUserData.name || hfUserData.email,
         providerId: 'huggingface.co',
-        getIdToken: async () => token, // Add this to match Firebase User interface
+        getIdToken: async () => token,
       } as unknown as User;
       
       setUser(customUser);
     } catch (error) {
-      console.error('HuggingFace login failed:', error);
-      throw error;
+      if (error instanceof Error) {
+        if (error.message.includes('Failed to fetch')) {
+          throw new Error('Unable to connect to HuggingFace. Please check your network connection.');
+        }
+        throw error;
+      }
+      throw new Error('Failed to authenticate with HuggingFace');
     }
   };
 
   const logout = async () => {
     try {
       await signOut(auth);
-      localStorage.removeItem('hf_token');
-      localStorage.removeItem('currentOrganizationId');
-      setUser(null);
-      setOrganization(null);
-      setOrganizations([]);
+      clearLocalStorage();
     } catch (error) {
       console.error('Logout failed:', error);
-      throw error;
+      // Don't throw error, just log it and continue
     }
   };
 
@@ -203,6 +280,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loginWithHuggingFace,
         logout,
         isAuthenticated: !!user,
+        isLoading,
       }}
     >
       {children}

@@ -15,7 +15,8 @@ public class ConfigurationConstants
     public const string MigrationsAssembly = "Inventory";
     public const string MongoDbSettings = "MongoDbSettings";
     public const string DefaultConnection = "DefaultConnection";
-    public const string ItemsRoute = "api/v{version:apiVersion}/[controller]";
+    public const string ApplicationURL = "http://0.0.0.0:8080";
+    public const string InventoryApiRoute = "api/[controller]";
     public const string ConnectionStringKey = "MongoDbSettings:ConnectionString";
 
     public class SwaggerConfig

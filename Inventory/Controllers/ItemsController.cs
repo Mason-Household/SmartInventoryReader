@@ -1,18 +1,18 @@
 using MediatR;
 using Inventory.Queries;
-using Inventory.Commands;
-using Inventory.Properties;
 using Microsoft.AspNetCore.Mvc;
+using Inventory.Commands.Items;
 
 namespace Inventory.Controllers;
 
-[ApiController]
-[Route(ConfigurationConstants.ItemsRoute)]
-[ApiVersion(ConfigurationConstants.ApiVersion)]
-public class ItemsController(IMediator _mediator) : ControllerBase
+public class ItemsController(IMediator _mediator) : BaseSmartInventoryController(_mediator)
 {
     [HttpPost]
     public async Task<IActionResult> SaveItem([FromBody] SaveItemCommand command) 
+        => Ok(await _mediator.Send(command));
+
+    [HttpPut]
+    public async Task<IActionResult> UpsertItem([FromBody] UpsertItemCommand command) 
         => Ok(await _mediator.Send(command));
 
     [HttpGet]
@@ -32,4 +32,8 @@ public class ItemsController(IMediator _mediator) : ControllerBase
         };
         return Ok(await _mediator.Send(query));
     }
+
+    [HttpDelete]
+    public async Task<IActionResult> DeleteItem([FromQuery] long id) => Ok(await _mediator.Send(new DeleteItemCommand(id)));
+    
 }

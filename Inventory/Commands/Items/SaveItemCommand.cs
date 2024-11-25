@@ -4,7 +4,7 @@ using Inventory.Models;
 using Inventory.Services;
 using Inventory.Repositories;
 
-namespace Inventory.Commands;
+namespace Inventory.Commands.Items;
 
 public class SaveItemCommandValidator : AbstractValidator<SaveItemCommand>
 {

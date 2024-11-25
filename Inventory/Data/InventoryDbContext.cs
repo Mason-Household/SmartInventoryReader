@@ -1,3 +1,5 @@
+
+
 using Inventory.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
@@ -13,6 +15,8 @@ public class InventoryDbContext(DbContextOptions<InventoryDbContext> options) : 
     public required DbSet<Tag> Tags { get; set; }
     public required DbSet<ItemImage> ItemImages { get; set; }
     public required DbSet<InventoryTransaction> InventoryTransactions { get; set; }
+    public required DbSet<Organization> Organizations { get; set; }
+    public required DbSet<UserOrganization> UserOrganizations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

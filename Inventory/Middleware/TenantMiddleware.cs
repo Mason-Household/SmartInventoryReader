@@ -20,10 +20,11 @@ public class TenantMiddleware(RequestDelegate next)
         await _next(context);
     }
 
-    private async Task<long?> GetOrganizationFromRequest(
+    private static async Task<long?> GetOrganizationFromRequest(
         HttpContext context,
         AppDbContext dbContext,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService
+    )
     {
         // First try from subdomain
         var host = context.Request.Host.Host;
