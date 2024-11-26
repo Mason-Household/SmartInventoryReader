@@ -1,6 +1,6 @@
 using MediatR;
 using Inventory.Models;
-using Inventory.Queries;
+using Inventory.Queries.Organizations;
 using Microsoft.AspNetCore.Mvc;
 using Inventory.Commands.Organizations;
 

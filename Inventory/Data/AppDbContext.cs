@@ -6,71 +6,74 @@ using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
-namespace Inventory.Data;
-
-[ExcludeFromCodeCoverage]
-public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserService currentUserService) : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
+namespace Inventory.Data
 {
-    private readonly ICurrentUserService _currentUserService = currentUserService;
-    private readonly long? _currentOrganizationId = currentUserService.GetCurrentOrganizationId();
-
-    public DbSet<Tag> Tags { get; set; } = null!;
-    public DbSet<Organization> Organizations { get; set; } = null!;
-    public DbSet<Item> Items { get; set; } = null!;
-    public DbSet<Category> Categories { get; set; } = null!;
-    public DbSet<PriceHistory> PriceHistories { get; set; } = null!;
-    public DbSet<ItemImage> ItemImages { get; set; } = null!;
-    public DbSet<InventoryTransaction> InventoryTransactions { get; set; } = null!;
-    public DbSet<UserOrganization> UserOrganizations { get; set; } = null!;
-
-    protected override void OnModelCreating(ModelBuilder builder)
+    [ExcludeFromCodeCoverage]
+    public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserService currentUserService) : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
     {
-        base.OnModelCreating(builder);
-        builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-        // Global query filter for multi-tenancy
-        foreach (var entityType in builder.Model.GetEntityTypes())
+        private readonly ICurrentUserService _currentUserService = currentUserService;
+        private readonly long? _currentOrganizationId = currentUserService.GetCurrentOrganizationId();
+
+        public DbSet<Consigner> Consigners { get; set; } = null!;
+        public DbSet<ConsignerPayout> ConsignerPayouts { get; set; } = null!;
+        public DbSet<Organization> Organizations { get; set; } = null!;
+        public DbSet<Item> Items { get; set; } = null!;
+        public DbSet<Category> Categories { get; set; } = null!;
+        public DbSet<PriceHistory> PriceHistories { get; set; } = null!;
+        public DbSet<ItemImage> ItemImages { get; set; } = null!;
+        public DbSet<InventoryTransaction> InventoryTransactions { get; set; } = null!;
+        public DbSet<UserOrganization> UserOrganizations { get; set; } = null!;
+
+        protected override void OnModelCreating(ModelBuilder builder)
         {
-            if (typeof(TenantEntity).IsAssignableFrom(entityType.ClrType))
+            base.OnModelCreating(builder);
+            // Apply entity configurations
+            builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+            // Global query filter for multi-tenancy
+            foreach (var entityType in builder.Model.GetEntityTypes())
             {
-                var parameter = Expression.Parameter(entityType.ClrType, "p");
-                var property = Expression.Property(parameter, nameof(TenantEntity.OrganizationId));
-                
-                // Handle the case where _currentOrganizationId is null
-                if (_currentOrganizationId.HasValue)
+                if (typeof(TenantEntity).IsAssignableFrom(entityType.ClrType))
                 {
-                    var orgId = Expression.Constant(_currentOrganizationId.Value, typeof(long));
-                    var body = Expression.Equal(property, orgId);
-                    var lambda = Expression.Lambda(body, parameter);
-                    builder.Entity(entityType.ClrType).HasQueryFilter(lambda);
-                }
-                else
-                {
-                    // When no organization is set, return false (no records)
-                    var body = Expression.Constant(false);
-                    var lambda = Expression.Lambda(body, parameter);
-                    builder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+                    var parameter = Expression.Parameter(entityType.ClrType, "p");
+                    var property = Expression.Property(parameter, nameof(TenantEntity.OrganizationId));
+                    
+                    // Handle the case where _currentOrganizationId is null
+                    if (_currentOrganizationId.HasValue)
+                    {
+                        var orgId = Expression.Constant(_currentOrganizationId.Value, typeof(long));
+                        var body = Expression.Equal(property, orgId);
+                        var lambda = Expression.Lambda(body, parameter);
+                        builder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+                    }
+                    else
+                    {
+                        // When no organization is set, return false (no records)
+                        var body = Expression.Constant(false);
+                        var lambda = Expression.Lambda(body, parameter);
+                        builder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+                    }
                 }
             }
         }
-    }
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            switch (entry.State)
+            foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
             {
-                case EntityState.Added:
-                    entry.Entity.CreatedAt = DateTime.UtcNow;
-                    entry.Entity.CreatedBy = _currentUserService.GetUserEmail() ?? "system";
-                    break;
-                case EntityState.Modified:
-                    entry.Entity.UpdatedAt = DateTime.UtcNow;
-                    entry.Entity.UpdatedBy = _currentUserService.GetUserEmail() ?? "system";
-                    break;
+                switch (entry.State)
+                {
+                    case EntityState.Added:
+                        entry.Entity.CreatedAt = DateTime.UtcNow;
+                        entry.Entity.CreatedBy = _currentUserService.GetUserEmail() ?? "system";
+                        break;
+                    case EntityState.Modified:
+                        entry.Entity.UpdatedAt = DateTime.UtcNow;
+                        entry.Entity.UpdatedBy = _currentUserService.GetUserEmail() ?? "system";
+                        break;
+                }
             }
-        }
 
-        return base.SaveChangesAsync(cancellationToken);
+            return base.SaveChangesAsync(cancellationToken);
+        }
     }
 }
