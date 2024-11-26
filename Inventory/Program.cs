@@ -20,7 +20,6 @@ public static class Program
         var app = builder.Build();
 
         app.ConfigureMiddleware();
-        app.ConfigureEndpoints();
 
         app.Run();
     }

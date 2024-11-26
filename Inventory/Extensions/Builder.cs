@@ -1,64 +1,65 @@
-using MediatR;
-using Serilog;
 using FirebaseAdmin;
-using Inventory.Data;
-using FluentValidation;
-using System.Reflection;
-using Inventory.Services;
 using FirebaseAdmin.Auth;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Google.Apis.Auth.OAuth2;
+using Inventory.Data;
+using Inventory.Middleware;
 using Inventory.Properties;
 using Inventory.Repositories;
-using Inventory.Middleware;
-using Google.Apis.Auth.OAuth2;
-using Microsoft.OpenApi.Models;
-using FluentValidation.AspNetCore;
+using Inventory.Services;
+using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi.Models;
+using Serilog;
+using System.Reflection;
 
-namespace Inventory.Extensions;
-
-[ExcludeFromCodeCoverage]
-public static class BuilderExtensions
+namespace Inventory.Extensions
 {
-    public static void ConfigureLogging(this WebApplicationBuilder builder)
+    public static class BuilderExtensions
     {
-        Log.Logger = new LoggerConfiguration()
-            .WriteTo.Console()
-            .WriteTo.File(ConfigurationConstants.FullLogFilePath, rollingInterval: RollingInterval.Day)
-            .CreateLogger();
-
-        builder.Host.UseSerilog();
-    }
-
-    public static void ConfigureServices(this WebApplicationBuilder builder)
-    {
-        FirebaseApp.Create(new AppOptions()
+        public static void ConfigureLogging(this WebApplicationBuilder builder)
         {
-            Credential = GoogleCredential.FromFile("/app/firebaseKey.json")
-        });
-        builder.Services.AddCors(options =>
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .WriteTo.File(ConfigurationConstants.FullLogFilePath, rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+
+            builder.Host.UseSerilog();
+        }
+
+        public static void ConfigureServices(this WebApplicationBuilder builder)
         {
-            options.AddDefaultPolicy(policy => policy
-                .WithOrigins("http://localhost:3000")
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials()
-            );
-        });
-        
-        builder.Services.AddSingleton(FirebaseAuth.DefaultInstance);
-        builder.Services.AddControllers();
-        builder.Services.AddFluentValidationAutoValidation()
-            .AddFluentValidationClientsideAdapters()
-            .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddHealthChecks();
-        builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-        
-        // Add Organization Service
-        builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+            // Initialize Firebase Admin SDK
+            FirebaseApp.Create(new AppOptions()
+            {
+                Credential = GoogleCredential.FromFile("/app/firebaseKey.json")
+            });
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(policy => policy
+                    .WithOrigins("http://localhost:3000")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials()
+                );
+            });
+
+            builder.Services.AddSingleton(FirebaseAuth.DefaultInstance);
+            builder.Services.AddControllers();
+            builder.Services.AddFluentValidationAutoValidation()
+                .AddFluentValidationClientsideAdapters()
+                .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddHealthChecks();
+            builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            
+            // Add Organization Service
+            builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         // Add API Versioning
         // builder.Services.AddApiVersioning(options =>
@@ -152,38 +153,49 @@ public static class BuilderExtensions
                 }
             });
         });
-    }
+                }
 
-    public static void ConfigureDatabase(this WebApplicationBuilder builder)
-    {
-        builder.Services.AddDbContext<InventoryDbContext>(options =>
-            options.UseNpgsql(
-                builder.Configuration.GetConnectionString(ConfigurationConstants.DefaultConnection),
-                x => x.MigrationsAssembly(ConfigurationConstants.MigrationsAssembly)
-            ));
-        builder.Services.AddScoped<AppDbContext>();
-    }
-
-    public static void ConfigureMiddleware(this WebApplication app)
-    {
-        if (app.Environment.IsDevelopment())
+        public static void ConfigureDatabase(this WebApplicationBuilder builder)
         {
-            app.UseSwagger();
-            app.UseSwaggerUI();
+            var defaultConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            if (string.IsNullOrEmpty(defaultConnectionString))
+            {
+                throw new InvalidOperationException("Default connection string is not configured.");
+            }
+
+            // Register InventoryDbContext
+            builder.Services.AddDbContext<InventoryDbContext>(options =>
+                options.UseNpgsql(
+                    builder.Configuration.GetConnectionString(ConfigurationConstants.DefaultConnection),
+                    x => x.MigrationsAssembly(ConfigurationConstants.MigrationsAssembly)
+                ));
+
+            // Register AppDbContext
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseNpgsql(
+                    builder.Configuration.GetConnectionString(ConfigurationConstants.DefaultConnection),
+                    x => x.MigrationsAssembly(ConfigurationConstants.MigrationsAssembly)
+                ));
         }
 
-        // Add exception handling middleware first
-        app.UseMiddleware<ExceptionHandlingMiddleware>();
-        
-        app.UseCors();
-        app.UseAuthentication();
-        app.UseAuthorization();
-        app.UseMiddleware<TenantMiddleware>();
-    }
+        public static void ConfigureMiddleware(this WebApplication app)
+        {
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
-    public static void ConfigureEndpoints(this WebApplication app)
-    {
-        app.MapControllers();
-        app.MapHealthChecks(ConfigurationConstants.HealthCheck);
+            // Add exception handling middleware first
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+            app.UseRouting();
+            app.UseCors();
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.MapControllers();
+            app.MapHealthChecks(ConfigurationConstants.HealthCheck);
+        }
     }
 }
