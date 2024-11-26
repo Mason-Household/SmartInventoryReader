@@ -35,7 +35,7 @@ public static class BuilderExtensions
         // Initialize Firebase Admin SDK
         FirebaseApp.Create(new AppOptions()
         {
-            Credential = GoogleCredential.FromFile("/app/firebaseKey.json")
+            Credential = GoogleCredential.FromFile(Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS"))
         });
 
         builder.Services.AddCors(options =>
@@ -153,14 +153,14 @@ public static class BuilderExtensions
         // Register InventoryDbContext
         builder.Services.AddDbContext<InventoryDbContext>(options =>
             options.UseNpgsql(
-                builder.Configuration.GetConnectionString(ConfigurationConstants.DefaultConnection),
+                defaultConnectionString,
                 x => x.MigrationsAssembly(ConfigurationConstants.MigrationsAssembly)
             ));
 
         // Register AppDbContext
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(
-                builder.Configuration.GetConnectionString(ConfigurationConstants.DefaultConnection),
+                defaultConnectionString,
                 x => x.MigrationsAssembly(ConfigurationConstants.MigrationsAssembly)
             ));
     }

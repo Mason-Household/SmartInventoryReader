@@ -19,13 +19,15 @@ services:
       start_period: 30s
 
   inventory:
-    image: fivemowner/smart-inventory-reader-backend:latest
+    build: .
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/Inventory
+      - ConnectionStrings__DefaultConnection=Host=db;Database=Inventory;Username=postgres;Password=postgres
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/firebaseKey.json
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
       interval: 1m30s

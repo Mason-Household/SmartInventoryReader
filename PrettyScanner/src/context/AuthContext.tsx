@@ -30,7 +30,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadOrganizations = async (user: User) => {
     try {
       const token = await user.getIdToken();
-      const response = await axios.get(`${API_URL}/api/organizations/getOrganizations`, {
+      const response = await axios.get(`${API_URL}/api/organizations/getOrganizations
+        s`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,

@@ -9,10 +9,17 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 namespace Inventory.Data
 {
     [ExcludeFromCodeCoverage]
-    public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserService currentUserService) : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
+    public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
     {
-        private readonly ICurrentUserService _currentUserService = currentUserService;
-        private readonly long? _currentOrganizationId = currentUserService.GetCurrentOrganizationId();
+        private readonly ICurrentUserService _currentUserService;
+        private readonly long? _currentOrganizationId;
+
+        public AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserService currentUserService)
+            : base(options)
+        {
+            _currentUserService = currentUserService;
+            _currentOrganizationId = currentUserService.GetCurrentOrganizationId();
+        }
 
         public DbSet<Consigner> Consigners { get; set; } = null!;
         public DbSet<ConsignerPayout> ConsignerPayouts { get; set; } = null!;
