@@ -131,19 +131,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(result.user);
 
       const token = await result.user.getIdToken();
-      const orgResponse = await axios.post(`${API_URL}/api/organizations/createOrganization`, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-          'Access-Control-Allow-Origin:': 'http://localhost:3000',
-          'Access-Control-Allow-Credentials': 'true',
-        },
-        body: JSON.stringify({ 
+      const domain = email.split('@')[1]; // Extract domain from email
+      const slug = organizationName.toLowerCase().replace(/\s+/g, '-');
+      
+      const orgResponse = await axios.post(
+        `${API_URL}/api/organizations/createOrganization`,
+        {
           name: organizationName,
-          slug: organizationName.toLowerCase().replace(/\s+/g, '-'),
+          slug: slug,
+          domain: domain,
           isActive: true,
-        }),
-      });
+          allowedAuthProviders: ['email'],
+          allowedEmailDomains: [domain]
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            'Access-Control-Allow-Origin': 'http://localhost:3000',
+            'Access-Control-Allow-Credentials': 'true',
+          }
+        }
+      );
 
       if (!orgResponse.data || !orgResponse.data.id) {
         console.error('Failed to create organization:', orgResponse.statusText);
