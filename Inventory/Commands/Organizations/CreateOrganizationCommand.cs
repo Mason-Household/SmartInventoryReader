@@ -12,9 +12,6 @@ public class CreateOrganizationCommandValidator : AbstractValidator<CreateOrgani
     {
         RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
         RuleFor(x => x.Slug).NotEmpty().MaximumLength(200);
-        RuleFor(x => x.Domain).NotEmpty().MaximumLength(200);
-        RuleFor(x => x.AllowedAuthProviders).NotEmpty();
-        RuleFor(x => x.AllowedEmailDomains).NotEmpty();
     }
 }
 
@@ -28,21 +25,15 @@ public class CreateOrganizationCommand : IRequest<Organization>
     public string[] AllowedEmailDomains { get; set; } = [];
 }
 
-public class CreateOrganizationCommandHandler : IRequestHandler<CreateOrganizationCommand, Organization>
+public class CreateOrganizationCommandHandler(
+    AppDbContext context,
+    ICurrentUserService currentUserService,
+    IOrganizationService organizationService
+) : IRequestHandler<CreateOrganizationCommand, Organization>
 {
-    private readonly AppDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IOrganizationService _organizationService;
-
-    public CreateOrganizationCommandHandler(
-        AppDbContext context,
-        ICurrentUserService currentUserService,
-        IOrganizationService organizationService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-        _organizationService = organizationService;
-    }
+    private readonly AppDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IOrganizationService _organizationService = organizationService;
 
     public async Task<Organization> Handle(
         CreateOrganizationCommand request,
@@ -77,7 +68,7 @@ public class CreateOrganizationCommandHandler : IRequestHandler<CreateOrganizati
             OrganizationId = organization.Id,
             Role = "Owner",
             JoinedAt = DateTime.UtcNow,
-            AuthProvider = "manual", // Since this is manual creation
+            AuthProvider = "email",
             ExternalUserId = null
         };
 
