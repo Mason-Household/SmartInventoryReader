@@ -4,7 +4,7 @@ using Inventory.Models;
 using Inventory.Services;
 using Inventory.Repositories;
 
-namespace Inventory.Queries;
+namespace Inventory.Queries.Items;
 
 public class GetItemsQueryValidator : AbstractValidator<GetItemsQuery>
 {

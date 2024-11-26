@@ -5,16 +5,7 @@ using Inventory.Services;
 using Inventory.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Inventory.Queries;
-
-public class GetOrganizationsQueryValidator : AbstractValidator<GetOrganizationsQuery>
-{
-    public GetOrganizationsQueryValidator()
-    {
-        RuleFor(x => x.Page).GreaterThanOrEqualTo(1);
-        RuleFor(x => x.PageSize).GreaterThanOrEqualTo(1);
-    }
-}
+namespace Inventory.Queries.Organizations;
 
 public class GetOrganizationsQuery : IRequest<List<Organization>>
 {

@@ -3,7 +3,7 @@ using FluentValidation;
 using Inventory.Models;
 using Inventory.Repositories;
 
-namespace Inventory.Queries;
+namespace Inventory.Queries.Consigners;
 
 public class GetUnpaidBalanceQueryValidator : AbstractValidator<GetUnpaidBalanceQuery>
 {

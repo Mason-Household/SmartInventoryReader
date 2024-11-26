@@ -3,7 +3,7 @@ using Inventory.Data;
 using Inventory.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Inventory.Queries;
+namespace Inventory.Queries.Consigners;
 
 public class GetConsignersQuery : IRequest<IEnumerable<Consigner>>
 {
