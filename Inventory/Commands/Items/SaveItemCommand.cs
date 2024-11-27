@@ -4,7 +4,7 @@ using Inventory.Models;
 using Inventory.Services;
 using Inventory.Repositories;
 
-namespace Inventory.Commands;
+namespace Inventory.Commands.Items;
 
 public class SaveItemCommandValidator : AbstractValidator<SaveItemCommand>
 {
@@ -44,7 +44,7 @@ public class SaveItemCommandHandler(
     )
     {
         var organizationId = _currentUserService.GetCurrentOrganizationId() ?? throw new UnauthorizedAccessException("User is not associated with any organization");
-        var organization = await _organizationRepository.GetAsync(o => o.Id == organizationId);
+        var organization = await _organizationRepository.GetAsync(o => o.Id == organizationId, cancellationToken);
         if (!organization.Any())
             throw new InvalidOperationException("Organization not found");
 
@@ -68,7 +68,7 @@ public class SaveItemCommandHandler(
             if (!existingTags.Any())
             {
                 tag = new Tag { Name = tagName, Organization = org };
-                tag = await _tagRepository.AddAsync(tag);
+                tag = await _tagRepository.AddAsync(tag, cancellationToken);
             }
             else
             {
@@ -77,6 +77,6 @@ public class SaveItemCommandHandler(
 
             item.Tags.Add(tag);
         }
-        return await _itemRepository.AddAsync(item);
+        return await _itemRepository.AddAsync(item, cancellationToken);
     }
 }

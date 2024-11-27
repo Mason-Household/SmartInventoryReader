@@ -1,11 +1,11 @@
 using Moq;
 using FluentAssertions;
 using Inventory.Models;
-using Inventory.Commands;
 using Inventory.Services;
 using Inventory.Repositories;
 using System.Linq.Expressions;
 using FluentValidation.TestHelper;
+using Inventory.Commands.Items;
 
 namespace Inventory.Tests.Commands;
 

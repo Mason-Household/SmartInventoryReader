@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -14,7 +15,7 @@ import {
 } from '@mui/material';
 import { Chrome } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { Organization } from '@/interfaces/Organization';
+import { Organization } from '../../interfaces/Organization';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -43,6 +44,7 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const Login: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -50,22 +52,62 @@ const Login: React.FC = () => {
   const [organization, setOrganization] = useState('');
   const [error, setError] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { 
     loginWithGoogle, 
     loginWithEmail, 
     registerWithEmail, 
-    loginWithHuggingFace 
+    loginWithHuggingFace,
+    isAuthenticated
   } = useAuth();
+
+  // Add effect to handle navigation after successful authentication
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
     setError('');
   };
 
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password: string): boolean => {
+    return password.length >= 6;
+  };
+
+  const validateOrganization = (org: string): boolean => {
+    return org.length >= 2 && /^[a-zA-Z0-9\s-]+$/.test(org);
+  };
+
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // Validation
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    if (!validateOrganization(organization)) {
+      setError('Organization name must be at least 2 characters and contain only letters, numbers, spaces, and hyphens');
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
       if (isRegistering) {
@@ -74,7 +116,11 @@ const Login: React.FC = () => {
         await loginWithEmail(email, password);
       }
     } catch (err) {
-      setError(isRegistering ? 'Registration failed. Please try again.' : 'Invalid email or password.');
+      const errorMessage = err instanceof Error ? err.message : 
+        isRegistering ? 'Registration failed. Please try again.' : 'Invalid email or password.';
+      setError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -82,17 +128,48 @@ const Login: React.FC = () => {
     e.preventDefault();
     setError('');
 
+    if (!validateOrganization(organization)) {
+      setError('Organization name must be at least 2 characters and contain only letters, numbers, spaces, and hyphens');
+      return;
+    }
+
+    if (!hfToken.trim()) {
+      setError('Please enter your HuggingFace token');
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
       const org: Organization = {
         name: organization,
         slug: organization.toLowerCase().replace(/\s/g, '-'),
         createdAt: new Date(),
         isActive: true,
-        id: undefined
-      }; // Assuming Organization has a 'name' property
+        id: null,
+        subscriptionTier: 'free'
+      };
       await loginWithHuggingFace(hfToken, org);
     } catch (err) {
-      setError('Invalid credentials. Please check your token and organization.');
+      const errorMessage = err instanceof Error ? err.message : 
+        'Invalid credentials. Please check your token and organization.';
+      setError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setError('');
+    setIsSubmitting(true);
+    try {
+      await loginWithGoogle();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 
+        'Google sign-in failed. Please try again.';
+      setError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -128,7 +205,8 @@ const Login: React.FC = () => {
             fullWidth
             variant="outlined"
             startIcon={<Chrome size={20} />}
-            onClick={() => loginWithGoogle()}
+            onClick={handleGoogleLogin}
+            disabled={isSubmitting}
             sx={{ mb: 2 }}
           >
             Continue with Google
@@ -158,6 +236,8 @@ const Login: React.FC = () => {
               autoComplete="organization"
               value={organization}
               onChange={(e) => setOrganization(e.target.value)}
+              disabled={isSubmitting}
+              error={!!error && error.includes('Organization')}
             />
             <TextField
               margin="normal"
@@ -169,6 +249,8 @@ const Login: React.FC = () => {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={isSubmitting}
+              error={!!error && error.includes('email')}
             />
             <TextField
               margin="normal"
@@ -181,11 +263,14 @@ const Login: React.FC = () => {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isSubmitting}
+              error={!!error && error.includes('Password')}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
+              disabled={isSubmitting}
               sx={{ mt: 3, mb: 2 }}
             >
               {isRegistering ? 'Register' : 'Sign In'}
@@ -194,7 +279,11 @@ const Login: React.FC = () => {
               <Link
                 component="button"
                 variant="body2"
-                onClick={() => setIsRegistering(!isRegistering)}
+                onClick={() => {
+                  setIsRegistering(!isRegistering);
+                  setError('');
+                }}
+                disabled={isSubmitting}
               >
                 {isRegistering
                   ? 'Already have an account? Sign in'
@@ -217,6 +306,8 @@ const Login: React.FC = () => {
               autoComplete="off"
               value={hfToken}
               onChange={(e) => setHfToken(e.target.value)}
+              disabled={isSubmitting}
+              error={!!error && error.includes('token')}
             />
             <TextField
               margin="normal"
@@ -228,11 +319,14 @@ const Login: React.FC = () => {
               autoComplete="off"
               value={organization}
               onChange={(e) => setOrganization(e.target.value)}
+              disabled={isSubmitting}
+              error={!!error && error.includes('Organization')}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
+              disabled={isSubmitting}
               sx={{ mt: 3, mb: 2 }}
             >
               Sign In with HuggingFace
