@@ -30,8 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadOrganizations = async (user: User) => {
     try {
       const token = await user.getIdToken();
-      const response = await axios.get(`${API_URL}/api/organizations/getOrganizations
-        s`, {
+      const response = await axios.get(`${API_URL}/api/organizations/getOrganizations`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -108,7 +107,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGoogle = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(tenantAuth, provider);
+      // Use the base auth instance for initial Google sign-in
+      const result = await signInWithPopup(auth, provider);
       setUser(result.user);
       await loadOrganizations(result.user);
     } catch (error) {

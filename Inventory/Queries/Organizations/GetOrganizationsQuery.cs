@@ -33,8 +33,9 @@ public class GetOrganizationsQueryHandler(
     )
     {
         var userId = _currentUserService.GetCurrentUserId();
+        // During initial registration, user might not have an ID yet, return empty list
         if (userId is null)
-            throw new UnauthorizedAccessException("No valid user ID found in the current context");
+            return new List<Organization>();
 
         var query = _context.Organizations
             .Include(o => o.Users)
@@ -56,9 +57,12 @@ public class GetOrganizationsQueryHandler(
             }
         }
 
-        return await query
+        var organizations = await query
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
             .ToListAsync(cancellationToken);
+
+        // Return empty list instead of throwing if no organizations found
+        return organizations;
     }
 }

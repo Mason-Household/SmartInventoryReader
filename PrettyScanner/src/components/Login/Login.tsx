@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -43,6 +44,7 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const Login: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -56,8 +58,16 @@ const Login: React.FC = () => {
     loginWithGoogle, 
     loginWithEmail, 
     registerWithEmail, 
-    loginWithHuggingFace 
+    loginWithHuggingFace,
+    isAuthenticated
   } = useAuth();
+
+  // Add effect to handle navigation after successful authentication
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);

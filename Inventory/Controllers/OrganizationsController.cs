@@ -13,7 +13,8 @@ public class OrganizationsController(IMediator _mediator) : BaseSmartInventoryCo
     [ProducesResponseType(typeof(IEnumerable<Organization>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetOrganizations(CancellationToken cancellationToken = default)
     {
-        return Ok(await _mediator.Send(new GetOrganizationsQuery(), cancellationToken));
+        var organizations = await _mediator.Send(new GetOrganizationsQuery(), cancellationToken);
+        return Ok(organizations);
     }
 
     [HttpPost]
