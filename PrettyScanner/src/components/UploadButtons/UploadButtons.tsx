@@ -9,7 +9,12 @@ interface UploadButtonsProps {
   isMobile: boolean;
 }
 
-const UploadButtons: React.FC<UploadButtonsProps> = ({ toggleCamera, handleButtonClick, isCapturing, isMobile }) => (
+const UploadButtons: React.FC<UploadButtonsProps> = ({ 
+  toggleCamera, 
+  handleButtonClick, 
+  isCapturing, 
+  isMobile 
+}) => (
   <Box sx={{ display: 'flex', gap: 2, mb: 3, justifyContent: 'center' }}>
     <Zoom in timeout={500}>
       <Button

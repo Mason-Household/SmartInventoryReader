@@ -52,7 +52,7 @@ const Consigners: React.FC = () => {
 
   const fetchConsigners = async () => {
     try {
-      const response = await fetch('/api/consigners/getConsigners');
+      const response = await fetch('/api/v1/consigners/getConsigners');
       if (!response.ok) throw new Error('Failed to fetch consigners');
       const data = await response.json();
       setConsigners(data);
@@ -91,7 +91,7 @@ const Consigners: React.FC = () => {
 
   const handleSaveConsigner = async () => {
     try {
-      const response = await fetch('/api/consigners/getConsigners', {
+      const response = await fetch('/api/consigners/upsertConsigner', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -107,7 +107,7 @@ const Consigners: React.FC = () => {
   const handleRecordPayout = async () => {
     if (!selectedConsigner) return;
     try {
-      const response = await fetch(`/api/consigners/getConsigners/${selectedConsigner.id}/payouts`, {
+      const response = await fetch(`/api/consigners/recordPayout/${selectedConsigner.id}/payouts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payoutData),
@@ -192,7 +192,6 @@ const Consigners: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{selectedConsigner ? 'Edit Consigner' : 'Add Consigner'}</DialogTitle>
         <DialogContent>
@@ -257,7 +256,6 @@ const Consigners: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Payout Dialog */}
       <Dialog open={payoutDialogOpen} onClose={() => setPayoutDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Record Payout</DialogTitle>
         <DialogContent>

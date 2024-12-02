@@ -3,8 +3,6 @@ import { Tag, DollarSign } from 'lucide-react';
 import { InventoryItem } from '@/interfaces/InventoryItem';
 import { Chip, InputAdornment, TextField } from '@mui/material';
 
-
-
 interface ResultActionsProps {
   itemData: InventoryItem;
   handleRemoveTag: (tag: string) => void;
