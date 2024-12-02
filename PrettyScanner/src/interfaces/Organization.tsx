@@ -1,9 +1,9 @@
 export interface Organization {
-    id: number | undefined | null;
-    name: string;
-    slug: string;
-    logoUrl?: string;
-    createdAt: Date;
-    isActive: boolean;
-    subscriptionTier?: string;
+	id: number | null | undefined;
+	name: string;
+	slug: string;
+	createdAt: Date;
+	isActive: boolean;
+	subscriptionTier: string;
+	firebaseTenantId?: string;
 }

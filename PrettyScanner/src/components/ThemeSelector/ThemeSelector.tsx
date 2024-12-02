@@ -13,7 +13,7 @@ import {
   Box,
 } from '@mui/material';
 import { motion } from 'framer-motion';
-import { Settings, Moon, Sun } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { useCustomTheme } from '../../theme/ThemeContext';
 
 const ThemeCard = motion(React.forwardRef<HTMLDivElement, any>((props, ref) => <Card {...props} ref={ref} component="div" />));
@@ -28,21 +28,12 @@ export const ThemeSelector: React.FC = () => {
     setOpen(false);
   };
 
-  const toggleMode = () => {
-    setTheme({ mode: currentTheme.mode === 'light' ? 'dark' : 'light' });
-  };
-
   return (
     <>
       <Box sx={{ display: 'flex', gap: 1 }}>
         <Tooltip title="Change theme" arrow TransitionComponent={Zoom}>
           <IconButton onClick={() => setOpen(true)} color="inherit">
             <Settings />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Toggle light/dark mode" arrow TransitionComponent={Zoom}>
-          <IconButton onClick={toggleMode} color="inherit">
-            {currentTheme.mode === 'dark' ? <Sun /> : <Moon />}
           </IconButton>
         </Tooltip>
       </Box>

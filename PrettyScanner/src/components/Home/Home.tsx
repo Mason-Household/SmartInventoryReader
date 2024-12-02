@@ -1,4 +1,3 @@
-// src/components/Home.tsx
 import React from 'react';
 import {
   Card,
@@ -21,12 +20,12 @@ import {
   QrCode,
   Image as ImageIcon,
   TrendingUp,
+  BarChart as BarcodeIcon,
 } from 'lucide-react';
-import BarcodeIcon from 'feather-icons/dist/icons/barcode.svg';
 import { useNavigate } from 'react-router-dom';
 
-const MotionCard = motion(React.forwardRef<HTMLDivElement, any>((props, ref) => <Card {...props} ref={ref} component="div" />));
 const MotionPaper = motion(React.forwardRef<HTMLDivElement, any>((props, ref) => <Paper {...props} ref={ref} />));
+const MotionCard = motion(React.forwardRef<HTMLDivElement, any>((props, ref) => <Card {...props} ref={ref} component="div" />));
 
 interface QuickActionProps {
   icon: React.ReactElement;
@@ -42,7 +41,6 @@ const QuickAction: React.FC<QuickActionProps> = ({
   onClick,
 }) => {
   const theme = useTheme();
-
   return (
     <MotionCard
       whileHover={{ scale: 1.02 }}
@@ -55,7 +53,15 @@ const QuickAction: React.FC<QuickActionProps> = ({
       }}
     >
       <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 2 }}>
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            textAlign: 'center', 
+            gap: 2
+          }}
+        >
           <Box
             sx={{
               p: 2,
@@ -81,7 +87,12 @@ const RecentScan: React.FC<{
   price: number;
   timestamp: string;
   confidence: number;
-}> = ({ type, price, timestamp, confidence }) => {
+}> = ({
+  type, 
+  price, 
+  timestamp, 
+  confidence 
+}) => {
   const theme = useTheme();
 
   return (

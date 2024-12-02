@@ -1,19 +1,23 @@
+using MediatR;
 using Serilog;
+using FirebaseAdmin;
 using Inventory.Data;
 using FluentValidation;
+using System.Reflection;
+using FirebaseAdmin.Auth;
+using Inventory.Services;
+using Inventory.Middleware;
 using Inventory.Properties;
-using System.Security.Claims;
 using Inventory.Repositories;
-using Microsoft.AspNetCore.Mvc;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.OpenApi.Models;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Inventory.Extensions;
 
-[ExcludeFromCodeCoverage]
 public static class BuilderExtensions
 {
     public static void ConfigureLogging(this WebApplicationBuilder builder)
@@ -28,48 +32,73 @@ public static class BuilderExtensions
 
     public static void ConfigureServices(this WebApplicationBuilder builder)
     {
+        // Initialize Firebase Admin SDK
+        FirebaseApp.Create(new AppOptions()
+        {
+            Credential = GoogleCredential.FromFile(Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS"))
+        });
+
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy => policy
+                .WithOrigins("http://localhost:3000")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials()
+            );
+        });
+
+        builder.Services.AddSingleton(FirebaseAuth.DefaultInstance);
         builder.Services.AddControllers();
-        builder.Services.AddFluentValidationAutoValidation()
+        builder.Services
+            .AddFluentValidationAutoValidation()
             .AddFluentValidationClientsideAdapters()
-            .AddValidatorsFromAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+            .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddHealthChecks();
         builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        
+        // Add Organization Service
+        builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+        builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+    }
 
-        // Add API Versioning
-        builder.Services.AddApiVersioning(options =>
-        {
-            options.DefaultApiVersion = new ApiVersion(1, 0);
-            options.AssumeDefaultVersionWhenUnspecified = true;
-            options.ReportApiVersions = true;
-        });
+    public static void ConfigureMediatR(this WebApplicationBuilder builder)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
+        builder.Services.Scan(scan => scan
+            .FromAssemblies(assembly)
+            .AddClasses(classes => classes.AssignableTo(typeof(IRequest<>)))
+            .AsImplementedInterfaces()
+            .WithScopedLifetime());
 
-        builder.Services.AddVersionedApiExplorer(options =>
-        {
-            options.GroupNameFormat = "'v'VVV";
-            options.SubstituteApiVersionInUrl = true;
-        });
+        builder.Services.Scan(scan => scan
+            .FromAssemblies(assembly)
+            .AddClasses(classes => classes.AssignableTo(typeof(IRequestHandler<,>)))
+            .AsImplementedInterfaces()
+            .WithScopedLifetime());
+
+        builder.Services.Scan(scan => scan
+            .FromAssemblies(assembly)
+            .AddClasses(classes => classes.AssignableTo(typeof(AbstractValidator<>)))
+            .AsImplementedInterfaces()
+            .WithScopedLifetime());
     }
 
     public static void ConfigureAuthentication(this WebApplicationBuilder builder)
     {
-        builder.Services.AddAuthentication(ConfigurationConstants.AuthenticationScheme)
-            .AddBearerToken(options =>
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
             {
-                options.Events = new BearerTokenEvents
+                options.Authority = "https://securetoken.google.com/" + builder.Configuration["Firebase:ProjectId"];
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    OnMessageReceived = context =>
-                    {
-                        var claims = new List<Claim>
-                        {
-                            new(ClaimTypes.Name, ConfigurationConstants.JwtConfig.Claims.UserId),
-                            new(ClaimTypes.Role, ConfigurationConstants.JwtConfig.Claims.Role)
-                        };
-                        var identity = new ClaimsIdentity(claims, ConfigurationConstants.AuthenticationScheme);
-                        context.Principal = new ClaimsPrincipal(identity);
-                        context.Success();
-                        return Task.CompletedTask;
-                    }
+                    ValidateIssuer = true,
+                    ValidIssuer = "https://securetoken.google.com/" + builder.Configuration["Firebase:ProjectId"],
+                    ValidateAudience = true,
+                    ValidAudience = builder.Configuration["Firebase:ProjectId"],
+                    ValidateLifetime = true
                 };
             });
     }
@@ -86,13 +115,14 @@ public static class BuilderExtensions
                 }
             );
 
-            c.AddSecurityDefinition(ConfigurationConstants.AuthenticationScheme, new OpenApiSecurityScheme
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                Description = ConfigurationConstants.JwtConfig.Description,
-                Name = ConfigurationConstants.JwtConfig.SecurityScheme,
+                Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                Name = "Authorization",
                 In = ParameterLocation.Header,
                 Type = SecuritySchemeType.Http,
-                Scheme = ConfigurationConstants.AuthenticationScheme.ToLower(),
+                Scheme = "bearer",
+                BearerFormat = "JWT"
             });
 
             c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -103,7 +133,7 @@ public static class BuilderExtensions
                         Reference = new OpenApiReference
                         {
                             Type = ReferenceType.SecurityScheme,
-                            Id = ConfigurationConstants.AuthenticationScheme
+                            Id = "Bearer"
                         }
                     },
                     Array.Empty<string>()
@@ -114,9 +144,23 @@ public static class BuilderExtensions
 
     public static void ConfigureDatabase(this WebApplicationBuilder builder)
     {
+        var defaultConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrEmpty(defaultConnectionString))
+        {
+            throw new InvalidOperationException("Default connection string is not configured.");
+        }
+
+        // Register InventoryDbContext
         builder.Services.AddDbContext<InventoryDbContext>(options =>
             options.UseNpgsql(
-                builder.Configuration.GetConnectionString(ConfigurationConstants.DefaultConnection),
+                defaultConnectionString,
+                x => x.MigrationsAssembly(ConfigurationConstants.MigrationsAssembly)
+            ));
+
+        // Register AppDbContext
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(
+                defaultConnectionString,
                 x => x.MigrationsAssembly(ConfigurationConstants.MigrationsAssembly)
             ));
     }
@@ -128,13 +172,15 @@ public static class BuilderExtensions
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-        app.UseHttpsRedirection();
+        app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+        app.UseRouting();
+        app.UseCors();
         app.UseAuthentication();
         app.UseAuthorization();
-    }
 
-    public static void ConfigureEndpoints(this WebApplication app)
-    {
+        app.UseMiddleware<TenantMiddleware>();
+
         app.MapControllers();
         app.MapHealthChecks(ConfigurationConstants.HealthCheck);
     }

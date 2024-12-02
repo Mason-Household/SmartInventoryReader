@@ -5,13 +5,16 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     build-essential \
     python3-dev \
-    python3-pip \
     libzbar0 \
     libgl1-mesa-glx \
-    libglib2.0-0
+    libglib2.0-0 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+EXPOSE 8000
 
 COPY . .
 

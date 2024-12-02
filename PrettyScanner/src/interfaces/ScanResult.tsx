@@ -1,6 +1,12 @@
 import { MenuItem } from "./MenuItem";
 
 export interface ScanResult {
+    name: string;
+    actual_price: number | null;
+    suggested_price: number | null;
+    stock_quantity: number | null;
+    low_stock_threshold: number | null;
+    tag_names: string[];
 	type: ScanType;
 	price: number | null;
 	confidence: number;
