@@ -35,7 +35,7 @@ public class GetOrganizationsQueryHandler(
         var userId = _currentUserService.GetCurrentUserId();
         // During initial registration, user might not have an ID yet, return empty list
         if (userId is null)
-            return new List<Organization>();
+            return [];
 
         var query = _context.Organizations
             .Include(o => o.Users)

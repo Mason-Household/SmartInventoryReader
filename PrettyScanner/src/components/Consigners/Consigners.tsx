@@ -52,7 +52,7 @@ const Consigners: React.FC = () => {
 
   const fetchConsigners = async () => {
     try {
-      const response = await fetch('/api/v1/consigners/getConsigners');
+      const response = await fetch('/api/consigners/getConsigners');
       if (!response.ok) throw new Error('Failed to fetch consigners');
       const data = await response.json();
       setConsigners(data);
