@@ -40,11 +40,6 @@ export const ThemeSelector: React.FC = () => {
             <Settings />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Toggle light/dark mode" arrow TransitionComponent={Zoom}>
-          <IconButton onClick={toggleMode} color="inherit">
-            {currentTheme.mode === 'dark' ? <Sun /> : <Moon />}
-          </IconButton>
-        </Tooltip>
       </Box>
 
       <Dialog
